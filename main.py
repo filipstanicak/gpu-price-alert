@@ -42,7 +42,8 @@ class App:
         self.st = storage
         self.notify = dispatcher
         self.sources = sources if sources is not None else [
-            GeizhalsSource(cfg.poll), *(cls(cfg.poll) for cls in SHOP_SOURCES)]
+            s for s in [GeizhalsSource(cfg.poll), *(cls(cfg.poll) for cls in SHOP_SOURCES)]
+            if s.name not in cfg.disabled_sources]
         self.tz = ZoneInfo(cfg.poll.timezone)
 
     def now(self) -> datetime:
