@@ -1,0 +1,97 @@
+poll:
+  default_interval_minutes: 30   # used by "python main.py" loop; GitHub Actions uses the cron in poll.yml
+  hot_phase:
+    start: "2026-11-26T00:00:00+01:00"
+    end:   "2026-11-30T23:59:00+01:00"
+    interval_minutes: 15
+  jitter_seconds: 120
+  run_until: "2026-12-01T23:59:00+01:00"
+  delay_between_requests_seconds: 4   # pause between two page requests
+  max_pages: 2
+  timezone: "Europe/Berlin"
+
+filters:
+  max_delivery_days: 5
+  include_shipping: true
+  shop_whitelist:            # matched case-insensitively, ".de/.net/.com" ignored
+    - Mindfactory
+    - Alternate
+    - Caseking
+    - Notebooksbilliger
+    - Proshop
+    - Computeruniverse
+    - Galaxus
+    - Cyberport
+    - Amazon.de              # only Amazon itself; marketplace sellers are excluded below
+  exclude_merchant_keywords: ["marketplace", "ebay", "stores", "filiale"]
+
+rules_default:
+  drop_percent: 8
+  median_days: 7
+  new_low_min_history_days: 3
+  realert_min_extra_drop_percent: 2
+  realert_cooldown_hours: 12
+  quiet_hours: ["00:00", "07:00"]     # except target-price hits
+  suspicious_below_median_percent: 40
+  daily_report_time: "20:00"
+
+notify:
+  ntfy:
+    enabled: true
+    server: "https://ntfy.sh"
+    topic: "${NTFY_TOPIC}"            # set in .env
+  telegram:
+    enabled: false
+    bot_token: "${TELEGRAM_BOT_TOKEN}"
+    chat_id: "${TELEGRAM_CHAT_ID}"
+
+database: "data/prices.sqlite3"
+
+products:
+  - id: rd-9070xt
+    name: "PowerColor Red Devil RX 9070 XT"
+    url: "https://geizhals.de/powercolor-red-devil-radeon-rx-9070-xt-a3397494.html"
+    mpns: ["RX9070XT 16G-E/OC"]
+    target_price: 0          # TODO after 2-3 days of history
+    exclude_keywords: ["white", "limited", "special edition"]
+
+  - id: tuf-5070ti
+    name: "Asus TUF Gaming RTX 5070 Ti OC"
+    url: "https://geizhals.de/asus-tuf-geforce-rtx-5070-ti-oc-a3382466.html"
+    mpns: ["TUF-RTX5070TI-O16G-GAMING", "90YV0MD0-M0NA00"]
+    target_price: 0          # TODO
+    exclude_keywords: ["white"]
+
+  - id: trio-5070ti
+    name: "MSI RTX 5070 Ti Gaming Trio OC Plus"
+    url: "https://geizhals.de/msi-geforce-rtx-5070-ti-16g-gaming-trio-oc-plus-a3382157.html"
+    mpns: ["G507T-16GTCP", "V531-058R"]
+    target_price: 0          # TODO
+    exclude_keywords: ["ventus", "white"]
+
+  - id: vanguard-5080
+    name: "MSI RTX 5080 Vanguard SOC"
+    urls:                    # normal version + Launch Edition (technically identical)
+      - "https://geizhals.de/msi-geforce-rtx-5080-16g-vanguard-soc-a3382098.html"
+      - "https://geizhals.de/msi-geforce-rtx-5080-16g-vanguard-soc-launch-edition-a3382112.html"
+    mpns: ["G5080-16VGS", "V531-039R", "V531-029R"]
+    target_price: 0          # TODO
+
+  - id: suprim-5080
+    name: "MSI RTX 5080 Suprim SOC"
+    url: "https://geizhals.de/msi-geforce-rtx-5080-16g-suprim-soc-a3382113.html"
+    mpns: ["G5080-16SPS", "V531-009R"]
+    target_price: 0          # TODO
+    exclude_keywords: ["liquid"]
+
+  - id: noctua-5080
+    name: "Asus RTX 5080 Noctua OC"
+    url: "https://geizhals.de/asus-geforce-rtx-5080-noctua-oc-edition-90yv0lx0-m0na00-a3503515.html"
+    mpns: ["RTX5080-O16G-NOCTUA", "90YV0M32-M0NA00"]
+    target_price: 0          # TODO
+
+compare:
+  - name: "RX 9070 XT vs. RTX 5070 Ti"
+    a: rd-9070xt
+    b: [tuf-5070ti, trio-5070ti]
+    max_diff: 150

@@ -1,0 +1,53 @@
+name: GPU-Preisalarm
+
+on:
+  schedule:
+    # Cron is UTC. Normal: every 30 min.
+    - cron: "*/30 * * * *"
+    # Hot phase (Black Week 26.–30.11.): additionally :15 and :45 -> every 15 min
+    - cron: "15,45 * 26-30 11 *"
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Ignore the 10-minute minimum gap"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write  # to commit the price history back
+
+concurrency:
+  group: gpu-price-alert
+  cancel-in-progress: false
+
+jobs:
+  poll:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Poll prices
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python main.py --once ${{ inputs.force && '--force' || '' }}
+
+      - name: Save price history
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git add data/prices.sqlite3
+          if ! git diff --cached --quiet; then
+            git commit -q -m "Preisdaten $(date -u +%Y-%m-%dT%H:%MZ)"
+            git pull -q --rebase && git push -q
+          fi

@@ -1,0 +1,16 @@
+[Unit]
+Description=GPU Black-Week price alert
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/gpu-price-alert
+ExecStart=/home/ubuntu/gpu-price-alert/.venv/bin/python main.py
+Restart=on-failure
+RestartSec=60
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
