@@ -74,7 +74,8 @@ class ProductConfig(BaseModel):
     name: str
     url: str | None = None
     urls: list[str] = Field(default_factory=list)
-    mpns: list[str] = Field(default_factory=list)  # page MPN must contain one of these
+    shop_urls: list[str] = Field(default_factory=list)  # direct shop product pages (Mindfactory/Alternate/Proshop)
+    mpns: list[str] = Field(default_factory=list)  # page MPN must exactly equal one of these
     target_price: float = 0  # 0 = rule disabled
     drop_percent: float | None = None  # overrides rules_default.drop_percent
     exclude_keywords: list[str] = Field(default_factory=list)

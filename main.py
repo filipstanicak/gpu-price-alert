@@ -22,10 +22,18 @@ from notify import Dispatcher, Notification, eur, format_alert
 from report import daily_report_text
 from sources.base import ParserError, SourceError
 from sources.geizhals import GeizhalsSource
+from sources.shops import SHOP_SOURCES
 from storage import Storage
 
 log = logging.getLogger("gpu-alert")
 FAIL_WARN_AFTER = 3  # consecutive network failures before a warning push (parser errors warn at once)
+
+
+def prefer_direct_offers(offers: list[Offer]) -> list[Offer]:
+    """A price read directly from the shop is fresher than Geizhals' copy of it (often 30-60 min old):
+    drop Geizhals offers of every shop that was successfully read directly."""
+    direct = {rules.normalize_shop(o.shop) for o in offers if o.source and o.source != "geizhals"}
+    return [o for o in offers if o.source != "geizhals" or rules.normalize_shop(o.shop) not in direct]
 
 
 class App:
@@ -33,7 +41,8 @@ class App:
         self.cfg = cfg
         self.st = storage
         self.notify = dispatcher
-        self.sources = sources if sources is not None else [GeizhalsSource(cfg.poll)]
+        self.sources = sources if sources is not None else [
+            GeizhalsSource(cfg.poll), *(cls(cfg.poll) for cls in SHOP_SOURCES)]
         self.tz = ZoneInfo(cfg.poll.timezone)
 
     def now(self) -> datetime:
@@ -57,7 +66,7 @@ class App:
         offers: list[Offer] = []
         any_ok = False
         for src in self.sources:
-            if not any(src.handles(u) for u in product.urls):
+            if not any(src.handles(u) for u in [*product.urls, *product.shop_urls]):
                 continue
             key = f"{product.id}:{src.name}"
             try:
@@ -66,7 +75,7 @@ class App:
                 self._source_ok(key, product)
             except (SourceError, ParserError) as e:
                 self._source_failed(key, product, src.name, e)
-        return offers if any_ok else None
+        return prefer_direct_offers(offers) if any_ok else None
 
     def process_product(self, product: ProductConfig, now: datetime) -> Offer | None:
         offers = self.fetch_offers(product)

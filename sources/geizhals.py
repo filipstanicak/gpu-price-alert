@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import logging
 import re
-import time
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 import httpx
@@ -15,7 +14,7 @@ from selectolax.lexbor import LexborHTMLParser as HTMLParser, LexborNode as Node
 
 from config import PollConfig, ProductConfig
 from models import Offer
-from sources.base import ParserError, SourceError
+from sources.base import ParserError, PoliteFetcher, check_variant
 
 log = logging.getLogger(__name__)
 
@@ -131,63 +130,26 @@ def _with_params(url: str, **params) -> str:
     return urlunsplit((p.scheme, p.netloc, p.path, urlencode(q), ""))
 
 
-def _norm_mpn(s: str) -> str:
-    return re.sub(r"[^a-z0-9]", "", s.lower())
-
-
 class GeizhalsSource:
     name = "geizhals"
 
     def __init__(self, poll: PollConfig, client: httpx.Client | None = None):
         self.poll = poll
-        self.client = client or httpx.Client(
-            headers={"User-Agent": poll.user_agent, "Accept-Language": "de-DE,de;q=0.9"},
-            timeout=httpx.Timeout(25.0),
-            follow_redirects=True,
-        )
-        self._last_request = 0.0
+        self.http = PoliteFetcher(poll, client, label="geizhals")
 
     def handles(self, url: str) -> bool:
         return "geizhals." in urlsplit(url).netloc
 
-    def _get(self, url: str) -> str:
-        delays = [0, 10, 30]
-        last_exc: Exception | None = None
-        for attempt, delay in enumerate(delays, 1):
-            wait = max(delay, self.poll.delay_between_requests_seconds - (time.monotonic() - self._last_request))
-            if wait > 0:
-                time.sleep(wait)
-            self._last_request = time.monotonic()
-            try:
-                r = self.client.get(url)
-                if r.status_code == 200:
-                    return r.text
-                last_exc = SourceError(f"HTTP {r.status_code} for {url}")
-                if r.status_code in (403, 404):
-                    break  # retrying won't help
-            except httpx.HTTPError as e:
-                last_exc = SourceError(f"{type(e).__name__}: {e}")
-            log.warning("geizhals attempt %d failed: %s", attempt, last_exc)
-        raise last_exc or SourceError(url)
-
     def fetch(self, product: ProductConfig) -> list[Offer]:
-        expected_mpns = product.mpns
         offers: list[Offer] = []
-        for url in product.urls:
-            page_url = _with_params(url, hloc="de")
-            html = self._get(page_url)
+        for url in [u for u in product.urls if self.handles(u)]:
+            html = self.http.get(_with_params(url, hloc="de"))
             meta, page_offers = parse_product_page(html, base_url=url)
-            bad = next((k for k in product.exclude_keywords if k.lower() in meta["title"].lower()), None)
-            if bad:
-                raise ParserError(f"page title '{meta['title']}' contains excluded keyword '{bad}' – wrong URL?")
-            # exact match: "RX9070XT 16G-E/OC/WHITE" must NOT pass for "RX9070XT 16G-E/OC"
-            if expected_mpns and meta["mpn"] and _norm_mpn(meta["mpn"]) not in {
-                    _norm_mpn(m) for m in expected_mpns}:
-                raise ParserError(f"MPN mismatch: page has '{meta['mpn']}', expected one of {expected_mpns}")
+            check_variant(product, meta["title"], meta["mpn"])
             offers.extend(page_offers)
             for page in range(2, self.poll.max_pages + 1):
                 if f"page={page}" not in html:
                     break
-                html = self._get(_with_params(url, hloc="de", page=page))
+                html = self.http.get(_with_params(url, hloc="de", page=page))
                 offers.extend(parse_product_page(html, base_url=url)[1])
         return offers

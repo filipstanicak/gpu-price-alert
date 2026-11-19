@@ -51,6 +51,10 @@ products:
   - id: rd-9070xt
     name: "PowerColor Red Devil RX 9070 XT"
     url: "https://geizhals.de/powercolor-red-devil-radeon-rx-9070-xt-a3397494.html"
+    shop_urls:                # direct shop pages (fresher prices than Geizhals)
+      - "https://www.mindfactory.de/product_info.php/16GB-PowerColor-Radeon-RX-9070-XT-Red-Devil-Aktiv-PCIe-5-0-x16--Retail-_1615545.html"
+      - "https://www.alternate.de/PowerColor/Radeon-RX-9070-XT-Red-Devil-16GB-OC-Grafikkarte/html/product/100108856"
+      - "https://www.proshop.de/Grafikkarte/PowerColor-Radeon-RX-9070-XT-Red-Devil-16GB-GDDR6-RAM-Grafikkarte/3331588"
     mpns: ["RX9070XT 16G-E/OC"]
     target_price: 0          # TODO after 2-3 days of history
     exclude_keywords: ["white", "limited", "special edition"]
@@ -58,6 +62,9 @@ products:
   - id: tuf-5070ti
     name: "Asus TUF Gaming RTX 5070 Ti OC"
     url: "https://geizhals.de/asus-tuf-geforce-rtx-5070-ti-oc-a3382466.html"
+    shop_urls:                # direct shop pages (fresher prices than Geizhals)
+      - "https://www.alternate.de/ASUS/GeForce-RTX-5070-Ti-TUF-GAMING-OC-Grafikkarte/html/product/100110150"
+      - "https://www.proshop.de/Grafikkarte/ASUS-GeForce-RTX-5070-Ti-TUF-OC-16GB-GDDR7-RAM-Grafikkarte/3331057"
     mpns: ["TUF-RTX5070TI-O16G-GAMING", "90YV0MD0-M0NA00"]
     target_price: 0          # TODO
     exclude_keywords: ["white"]
@@ -87,6 +94,8 @@ products:
   - id: noctua-5080
     name: "Asus RTX 5080 Noctua OC"
     url: "https://geizhals.de/asus-geforce-rtx-5080-noctua-oc-edition-90yv0lx0-m0na00-a3503515.html"
+    shop_urls:                # direct shop pages (fresher prices than Geizhals)
+      - "https://www.alternate.de/ASUS/GeForce-RTX-5080-Noctua-OC-Edition-Grafikkarte/html/product/100147840"
     mpns: ["RTX5080-O16G-NOCTUA", "90YV0M32-M0NA00"]
     target_price: 0          # TODO
 
