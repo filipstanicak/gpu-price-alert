@@ -65,6 +65,16 @@ products:
     target_price: 979       # ~8 % unter aktuell 1.064 €; Hellhound liegt bei ~987 €
     exclude_keywords: ["white", "limited", "special edition"]
 
+  - id: hellhound-9070xt
+    name: "PowerColor Hellhound RX 9070 XT"
+    short_name: "Hellhound 9070 XT"
+    url: "https://geizhals.de/powercolor-hellhound-radeon-rx-9070-xt-a3397516.html"
+    shop_urls:                # direct shop pages (fresher prices than Geizhals)
+      - "https://www.alternate.de/PowerColor/Radeon-RX-9070-XT-Hellhound-16GB-OC-Grafikkarte/html/product/100108858"
+    mpns: ["RX9070XT 16G-L/OC"]
+    target_price: 909       # ~9 % unter aktuell 999 € (Whitelist-Shops); Reaper ~957 €
+    exclude_keywords: ["white", "reva", "resonance"]
+
   - id: tuf-5070ti
     name: "Asus TUF Gaming RTX 5070 Ti OC"
     short_name: "TUF 5070 Ti"
