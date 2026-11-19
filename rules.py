@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import re
+from dataclasses import replace
 from datetime import datetime, time, timedelta
 
 from config import FilterConfig, ProductConfig, RulesConfig
@@ -42,6 +43,8 @@ def excluded_by_keywords(text: str, keywords: list[str]) -> str | None:
 def filter_offers(offers: list[Offer], product: ProductConfig, f: FilterConfig) -> list[Offer]:
     out = []
     for o in offers:
+        if not f.include_shipping:
+            o = replace(o, shipping_eur=None)  # compare the card price only; shipping is ignored
         if not shop_allowed(o.shop, f):
             continue
         if not delivery_ok(o, f):

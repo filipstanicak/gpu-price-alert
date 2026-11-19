@@ -83,3 +83,16 @@ def test_direct_shop_price_replaces_geizhals_copy():
     kept = prefer_direct_offers(offers)
     assert {(o.shop, o.source) for o in kept} == {("Mindfactory", "geizhals"), ("galaxus", "geizhals"),
                                                   ("Proshop", "proshop")}
+
+
+def test_card_price_only_when_shipping_ignored():
+    o = _o("Mindfactory", 1149, "mindfactory")
+    o.shipping_eur = None  # shop page without recognisable shipping
+    priced = Offer(shop="Proshop", price_eur=1119.90, shipping_eur=5.99, in_stock=True, delivery_text="",
+                   delivery_days_max=0, offer_url="u", source="proshop")
+    f = FilterConfig(shop_whitelist=["Mindfactory", "Proshop"], include_shipping=False)
+    kept = filter_offers([o, priced], rd(), f)
+    assert {(x.shop, x.total_eur) for x in kept} == {("Mindfactory", 1149), ("Proshop", 1119.90)}
+    # with shipping counted, the offer with unknown shipping is skipped and Proshop costs 1125.89
+    f2 = FilterConfig(shop_whitelist=["Mindfactory", "Proshop"], include_shipping=True)
+    assert [(x.shop, x.total_eur) for x in filter_offers([o, priced], rd(), f2)] == [("Proshop", 1125.89)]

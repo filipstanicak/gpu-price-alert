@@ -28,11 +28,16 @@ Der Workflow `.github/workflows/poll.yml` läuft alle 30 min, vom 26.–30.11. a
 Alternativ auf einem eigenen Linux-Rechner: `deploy/gpu-price-alert.service` (systemd) oder Docker:
 `docker build -t gpu-alert . && docker run -d --restart unless-stopped --env-file .env -v $PWD/data:/app/data gpu-alert`
 
+## Übersichtsseite
+https://filipstanicak.github.io/gpu-price-alert/ – Bestpreis, Ziel, Abstand und Preisverlauf je Karte.
+Wird nach jedem Lauf vom Workflow neu gebaut (`python dashboard.py --out site`) und über GitHub Pages veröffentlicht.
+Der Tagesreport-Push öffnet die Seite beim Antippen.
+
 ## Wichtige Details
 - **Nur Geizhals-Produktseiten** werden abgerufen (laut robots.txt erlaubt); Suche (`/?fs=`) und `/redir/` werden nie automatisch aufgerufen. Mindestens 4 s Pause zwischen Requests, Intervall nie unter 10 min.
 - **Varianten-Schutz:** Jede Seite muss die MPN aus `mpns` exakt tragen (z. B. `RX9070XT 16G-E/OC/WHITE` wird abgelehnt) und der Seitentitel darf kein `exclude_keywords`-Wort enthalten. Sonst → einmalige Warn-Push.
 - **Direkte Shop-Abfrage:** Mindfactory, Alternate und Proshop werden zusätzlich direkt abgefragt (`shop_urls`, schema.org-Produktdaten). Deren Preis ersetzt Geizhals' (oft 30–60 min alte) Kopie desselben Shops. idealo, Notebooksbilliger, Cyberport, Computeruniverse, Galaxus und Amazon blockieren automatische Abrufe und werden nur über Geizhals erfasst.
-- **Preis = Artikel + Standardversand** (aus der Versandspalte von Geizhals). Angebote ohne erkennbare Versandkosten werden ignoriert.
+- **Verglichen wird nur der Kartenpreis** (`include_shipping: false`), Versandkosten werden ignoriert. Mit `true` wird stattdessen Artikel + Standardversand verglichen.
 - **Lieferbar** = Geizhals-Status „lagernd“ oder Lieferzeit ≤ `max_delivery_days`.
 - `target_price: 0` = Zielpreis-Regel aus. Nach 2–3 Tagen Verlauf (`python report.py`) setzen.
 - Akzeptanztest Zielpreis: `target_price` testweise hoch setzen und mit separater DB laufen lassen, damit der Test-Alarm echte Alarme nicht blockiert:

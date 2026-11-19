@@ -117,6 +117,7 @@ class AppConfig(BaseModel):
     products: list[ProductConfig]
     compare: list[CompareRule] = Field(default_factory=list)
     disabled_sources: list[str] = Field(default_factory=list)  # e.g. ["mindfactory", "proshop"]
+    dashboard_url: str | None = None  # overview page; the daily report push opens it on tap
     database: str = "data/prices.sqlite3"
 
     @model_validator(mode="after")

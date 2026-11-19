@@ -180,7 +180,8 @@ class App:
         if self.st.get_state("daily_report") == today:
             return
         if self.notify.send(Notification(title=f"📊 Tagesreport · {now.astimezone(self.tz):%d.%m.}",
-                                         message=daily_report_text(self.cfg, self.st, now), priority="low")):
+                                         message=daily_report_text(self.cfg, self.st, now), priority="low",
+                                         click_url=self.cfg.dashboard_url)):
             self.st.set_state("daily_report", today)
 
     # --- scheduling -------------------------------------------------------------

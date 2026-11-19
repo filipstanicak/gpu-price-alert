@@ -15,6 +15,8 @@ on:
 
 permissions:
   contents: write  # to commit the price history back
+  pages: write     # to publish the overview page
+  id-token: write  # required by deploy-pages
 
 concurrency:
   group: gpu-price-alert
@@ -24,6 +26,9 @@ jobs:
   poll:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v7
 
@@ -51,3 +56,20 @@ jobs:
             git commit -q -m "Preisdaten $(date -u +%Y-%m-%dT%H:%MZ)"
             git pull -q --rebase && git push -q
           fi
+
+      - name: Build overview page
+        if: always()
+        run: python dashboard.py --out site
+
+      - uses: actions/configure-pages@v6
+        if: always()
+
+      - uses: actions/upload-pages-artifact@v5
+        if: always()
+        with:
+          path: site
+
+      - name: Publish overview page
+        id: deployment
+        if: always()
+        uses: actions/deploy-pages@v5

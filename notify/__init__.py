@@ -67,8 +67,12 @@ def format_alert(a: Alert) -> Notification:
         marker, kind, prio = "📉", "Preissturz", "default"
 
     lines = [f"{pretty_shop(o.shop)} · {availability(o)}"]
-    ship = "inkl. Versand" if not o.shipping_eur else f"inkl. {eur(o.shipping_eur)} Versand"
-    price_line = f"{eur(total)} {ship}"
+    if o.shipping_eur is None:  # shipping ignored: card price only
+        price_line = eur(total)
+    elif o.shipping_eur == 0:
+        price_line = f"{eur(total)} inkl. Versand"
+    else:
+        price_line = f"{eur(total)} inkl. {eur(o.shipping_eur)} Versand"
     if a.target_price:
         price_line += f" · Ziel {eur(a.target_price)}" + (" ✓" if "target" in a.rules else "")
     lines.append(price_line)

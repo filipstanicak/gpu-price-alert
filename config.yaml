@@ -12,7 +12,7 @@ poll:
 
 filters:
   max_delivery_days: 5
-  include_shipping: true
+  include_shipping: false     # compare the card price only (shipping ignored)
   shop_whitelist:            # matched case-insensitively, ".de/.net/.com" ignored
     - Mindfactory
     - Alternate
@@ -47,6 +47,7 @@ notify:
     chat_id: "${TELEGRAM_CHAT_ID}"
 
 database: "data/prices.sqlite3"
+dashboard_url: "https://filipstanicak.github.io/gpu-price-alert/"   # overview page (GitHub Pages)
 
 # Mindfactory and Proshop block requests from GitHub's cloud servers (403 / block page).
 # They work from a home internet connection - remove them here if you run the app on your own PC.
