@@ -197,3 +197,17 @@ def test_interval_respects_floor_and_hot_phase():
     assert 600 <= hot <= 720
     normal = app.interval_seconds(datetime(2026, 11, 20, 12, tzinfo=TZ))
     assert 1680 <= normal <= 1920
+
+
+def test_compare_rule_uses_cheapest_on_each_side():
+    from config import CompareRule
+    prods = [P.model_copy(update={"id": i, "short_name": i}) for i in ("a1", "a2", "b1", "b2")]
+    cfg = AppConfig(products=prods, rules_default=R,
+                    compare=[CompareRule(name="AMD vs NV", a=["a1", "a2"], b=["b1", "b2"], max_diff=150)])
+    rec = RecDispatcher()
+    app = App(cfg, Storage(":memory:"), rec, sources=[])
+    t = datetime(2026, 11, 20, 12, 0, tzinfo=TZ)
+    app.check_compare_rules({"a1": offer(1000), "a2": offer(950), "b1": offer(1200), "b2": offer(1090)}, t)
+    assert len(rec.sent) == 1 and "140 €" in rec.sent[0].title and "a2" in rec.sent[0].message
+    app.check_compare_rules({"a1": offer(1000), "a2": offer(950), "b1": offer(1200), "b2": offer(1200)}, t)
+    assert len(rec.sent) == 1  # 250 € gap -> no alert

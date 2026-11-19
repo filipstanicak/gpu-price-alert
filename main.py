@@ -146,12 +146,13 @@ class App:
     def check_compare_rules(self, bests: dict[str, Offer | None], now: datetime) -> None:
         names = {p.id: p.label for p in self.cfg.products}
         for c in self.cfg.compare:
-            a = bests.get(c.a)
-            bs = [bests[b] for b in c.b if bests.get(b)]
-            if not a or not bs:
+            a_ids = [pid for pid in c.a if bests.get(pid)]
+            b_ids = [pid for pid in c.b if bests.get(pid)]
+            if not a_ids or not b_ids:
                 continue
-            b = min(bs, key=lambda o: o.total_eur)
-            b_id = next(pid for pid in c.b if bests.get(pid) is b)
+            a_id = min(a_ids, key=lambda pid: bests[pid].total_eur)
+            b_id = min(b_ids, key=lambda pid: bests[pid].total_eur)
+            a, b = bests[a_id], bests[b_id]
             diff = b.total_eur - a.total_eur
             if diff >= c.max_diff:
                 continue
@@ -164,7 +165,7 @@ class App:
                     continue
             ok = self.notify.send(Notification(
                 title=f"⚖️ Vergleich · {c.name} · nur {eur(diff)} Abstand",
-                message=(f"{names[c.a]}: {eur(a.total_eur)} · {pretty_shop(a.shop)}\n"
+                message=(f"{names[a_id]}: {eur(a.total_eur)} · {pretty_shop(a.shop)}\n"
                          f"{names[b_id]}: {eur(b.total_eur)} · {pretty_shop(b.shop)}\n"
                          f"Schwelle: unter {eur(c.max_diff)}"),
                 click_url=b.offer_url))

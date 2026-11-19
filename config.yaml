@@ -53,75 +53,135 @@ database: "data/prices.sqlite3"
 disabled_sources: ["mindfactory", "proshop"]
 
 products:
+  # Variants are grouped per card when Geizhals lists IDENTICAL specs (clocks, cooler, TGP, size),
+  # i.e. only colour/design/bundle differs. Technically worse variants are left out on purpose.
+  # Every page must carry one of the listed MPNs exactly.
+
+  # ---------------- Radeon RX 9070 XT ----------------
   - id: rd-9070xt
     name: "PowerColor Red Devil RX 9070 XT"
     short_name: "Red Devil 9070 XT"
-    url: "https://geizhals.de/powercolor-red-devil-radeon-rx-9070-xt-a3397494.html"
-    shop_urls:                # direct shop pages (fresher prices than Geizhals)
+    urls:                     # Standard, Spectral White, Limited + Special Edition (Limited/Special: + GPU holder)
+      - "https://geizhals.de/powercolor-red-devil-radeon-rx-9070-xt-a3397494.html"
+      - "https://geizhals.de/powercolor-red-devil-spectral-white-radeon-rx-9070-xt-rx9070xt-16g-e-oc-white-a3467738.html"
+      - "https://geizhals.de/powercolor-red-devil-radeon-rx-9070-xt-limited-edition-rx9070xt-16g-e-oc-limited-a3430129.html"
+      - "https://geizhals.de/powercolor-red-devil-radeon-rx-9070-xt-special-edition-rx9070xt-16g-e-oc-bp-a3500307.html"
+    shop_urls:
       - "https://www.mindfactory.de/product_info.php/16GB-PowerColor-Radeon-RX-9070-XT-Red-Devil-Aktiv-PCIe-5-0-x16--Retail-_1615545.html"
       - "https://www.alternate.de/PowerColor/Radeon-RX-9070-XT-Red-Devil-16GB-OC-Grafikkarte/html/product/100108856"
+      - "https://www.alternate.de/PowerColor/Radeon-RX-9070-XT-Red-Devil-16GB-OC-WHITE-Grafikkarte/html/product/100122070"
       - "https://www.proshop.de/Grafikkarte/PowerColor-Radeon-RX-9070-XT-Red-Devil-16GB-GDDR6-RAM-Grafikkarte/3331588"
-    mpns: ["RX9070XT 16G-E/OC"]
-    target_price: 979       # ~8 % unter aktuell 1.064 €; Hellhound liegt bei ~987 €
-    exclude_keywords: ["white", "limited", "special edition"]
+    mpns: ["RX9070XT 16G-E/OC", "RX9070XT 16G-E/OC/WHITE", "RX9070XT 16G-E/OC/LIMITED", "RX9070XT 16G-E/OC/BP"]
+    target_price: 979         # ~8 % unter aktuell 1.064 €; Hellhound ~999 €
 
   - id: hellhound-9070xt
     name: "PowerColor Hellhound RX 9070 XT"
     short_name: "Hellhound 9070 XT"
-    url: "https://geizhals.de/powercolor-hellhound-radeon-rx-9070-xt-a3397516.html"
-    shop_urls:                # direct shop pages (fresher prices than Geizhals)
+    urls:                     # Standard, Reva, Resonance Edition. NOT Spectral White: Geizhals lists no 317 W OC power limit
+      - "https://geizhals.de/powercolor-hellhound-radeon-rx-9070-xt-a3397516.html"
+      - "https://geizhals.de/powercolor-hellhound-reva-radeon-rx-9070-xt-rx9070xt-16g-l-oc-reva-a3618569.html"
+      - "https://geizhals.de/powercolor-hellhound-radeon-rx-9070-xt-resonance-edition-rx9070xt-16g-l-oc-res-a3924340.html"
+    shop_urls:
       - "https://www.alternate.de/PowerColor/Radeon-RX-9070-XT-Hellhound-16GB-OC-Grafikkarte/html/product/100108858"
-    mpns: ["RX9070XT 16G-L/OC"]
-    target_price: 909       # ~9 % unter aktuell 999 € (Whitelist-Shops); Reaper ~957 €
-    exclude_keywords: ["white", "reva", "resonance"]
+      - "https://www.alternate.de/PowerColor/Powercolor-RX-9070-XT-Hellhound-REVA-16GB-OC-Grafikkarte/html/product/100163768"
+    mpns: ["RX9070XT 16G-L/OC", "RX9070XT 16G-L/OC/REVA", "RX9070XT 16G-L/OC/RES"]
+    target_price: 909         # ~9 % unter aktuell 999 € (Whitelist-Shops); Reaper ~957 €
+    exclude_keywords: ["white"]
 
+  - id: tuf-9070xt
+    name: "Asus TUF Gaming RX 9070 XT OC"
+    short_name: "TUF 9070 XT"
+    urls:                     # Standard + COD BO7 / Onimusha Special Edition (same card, game-themed bundle)
+      - "https://geizhals.de/asus-tuf-gaming-radeon-rx-9070-xt-oc-a3430250.html"
+      - "https://geizhals.de/asus-tuf-gaming-radeon-rx-9070-xt-cod-bo7-special-edition-90yv0l76-m0nm00-a3676266.html"
+      - "https://geizhals.de/asus-tuf-gaming-radeon-rx-9070-xt-onimusha-special-edition-avx-a3930474.html"
+    shop_urls:
+      - "https://www.alternate.de/ASUS/Radeon-RX-9070-XT-TUF-GAMING-OC-Grafikkarte/html/product/100108564"
+      - "https://www.alternate.de/ASUS/Radeon-RX-9070-XT-TUF-ONIMUSHA-OC-Grafikkarte/html/product/100230049"
+    mpns: ["90YV0L70-M0NA00", "90YV0L76-M0NM00", "90YV0L77-M0NA00", "avx"]  # "avx" = Geizhals' MPN field on the Onimusha page
+    target_price: 969         # leiseste 9070 XT laut TechPowerUp-Messung; Red-Devil-Niveau
+    exclude_keywords: ["prime"]
+
+  # ---------------- GeForce RTX 5070 Ti ----------------
   - id: tuf-5070ti
     name: "Asus TUF Gaming RTX 5070 Ti OC"
     short_name: "TUF 5070 Ti"
-    url: "https://geizhals.de/asus-tuf-geforce-rtx-5070-ti-oc-a3382466.html"
-    shop_urls:                # direct shop pages (fresher prices than Geizhals)
+    urls:                     # Standard + White. NOT BTF White: needs a BTF motherboard (GC-HPWR connector)
+      - "https://geizhals.de/asus-tuf-geforce-rtx-5070-ti-oc-a3382466.html"
+      - "https://geizhals.de/asus-tuf-gaming-geforce-rtx-5070-ti-oc-white-90yv0md3-m0na00-a3480862.html"
+    shop_urls:
       - "https://www.alternate.de/ASUS/GeForce-RTX-5070-Ti-TUF-GAMING-OC-Grafikkarte/html/product/100110150"
+      - "https://www.alternate.de/ASUS/GeForce-RTX-5070-Ti-TUF-GAMING-OC-WHITE-Edition-Grafikkarte/html/product/100132482"
       - "https://www.proshop.de/Grafikkarte/ASUS-GeForce-RTX-5070-Ti-TUF-OC-16GB-GDDR7-RAM-Grafikkarte/3331057"
-    mpns: ["TUF-RTX5070TI-O16G-GAMING", "90YV0MD0-M0NA00"]
-    target_price: 1499       # aktuell 1.745 € (überteuert); Prime OC 1.440 €, TUF White 1.540 €
-    exclude_keywords: ["white"]
+    mpns: ["TUF-RTX5070TI-O16G-GAMING", "90YV0MD0-M0NA00", "90YV0MD3-M0NA00"]
+    target_price: 1499        # aktuell 1.745 € (ueberteuert); Prime OC 1.440 €
+    exclude_keywords: ["btf"]
 
   - id: trio-5070ti
-    name: "MSI RTX 5070 Ti Gaming Trio OC Plus"
-    short_name: "Trio OC Plus 5070 Ti"
-    url: "https://geizhals.de/msi-geforce-rtx-5070-ti-16g-gaming-trio-oc-plus-a3382157.html"
-    mpns: ["G507T-16GTCP", "V531-058R"]
-    target_price: 1449       # derzeit keine Angebote; Gaming Trio OC (ohne Plus) ab 1.399 €
-    exclude_keywords: ["ventus", "white"]
+    name: "MSI RTX 5070 Ti Gaming Trio OC / OC Plus"
+    short_name: "Gaming Trio 5070 Ti"
+    urls:                     # OC Plus, OC (identical specs per Geizhals) and OC White. NOT Ventus/Shadow (other cooler)
+      - "https://geizhals.de/msi-geforce-rtx-5070-ti-16g-gaming-trio-oc-plus-a3382157.html"
+      - "https://geizhals.de/msi-geforce-rtx-5070-ti-16g-gaming-trio-oc-a3445122.html"
+      - "https://geizhals.de/msi-geforce-rtx-5070-ti-16g-gaming-trio-oc-white-a3445154.html"
+    shop_urls:
+      - "https://www.alternate.de/MSI/GeForce-RTX-5070-Ti-GAMING-TRIO-OC-Grafikkarte/html/product/100127304"
+      - "https://www.alternate.de/MSI/GeForce-RTX-5070-Ti-GAMING-TRIO-OC-WHITE-Grafikkarte/html/product/100129818"
+    mpns: ["G507T-16GTCP", "V531-058R", "G507T-16GTC", "V531-240R", "G507T-16GTCW", "V531-057R"]
+    target_price: 1449        # Gaming Trio OC aktuell ab 1.399 € (Geizhals gesamt)
+    exclude_keywords: ["ventus", "shadow"]
 
+  - id: vanguard-5070ti
+    name: "MSI RTX 5070 Ti Vanguard SOC"
+    short_name: "Vanguard SOC 5070 Ti"
+    urls:                     # normal + Launch Edition (identical); leiseste 5070 Ti laut TechPowerUp
+      - "https://geizhals.de/msi-geforce-rtx-5070-ti-16g-vanguard-soc-a3382150.html"
+      - "https://geizhals.de/msi-geforce-rtx-5070-ti-16g-vanguard-soc-launch-edition-a3382156.html"
+    mpns: ["G507T-16VGS", "V531-069R", "G507T-16VGSL"]
+    target_price: 1499        # derzeit keine Angebote; Premium-Modell, TUF-Niveau
+
+  # ---------------- GeForce RTX 5080 ----------------
   - id: vanguard-5080
     name: "MSI RTX 5080 Vanguard SOC"
     short_name: "Vanguard SOC 5080"
-    urls:                    # normal version + Launch Edition (technically identical)
+    urls:                     # normal + Launch Edition (identical)
       - "https://geizhals.de/msi-geforce-rtx-5080-16g-vanguard-soc-a3382098.html"
       - "https://geizhals.de/msi-geforce-rtx-5080-16g-vanguard-soc-launch-edition-a3382112.html"
     mpns: ["G5080-16VGS", "V531-039R", "V531-029R"]
-    target_price: 2049       # derzeit keine Angebote; RTX 5080 Customs ~1.990–2.250 €
+    target_price: 2049        # derzeit keine Angebote; RTX 5080 Customs ~1.990-2.250 €
 
   - id: suprim-5080
     name: "MSI RTX 5080 Suprim SOC"
     short_name: "Suprim SOC 5080"
     url: "https://geizhals.de/msi-geforce-rtx-5080-16g-suprim-soc-a3382113.html"
+    # NOT Suprim Liquid (AiO water cooling, pump) and NOT Suprim OC (lower clock 2700 vs 2745 MHz)
     mpns: ["G5080-16SPS", "V531-009R"]
-    target_price: 2149       # derzeit keine Angebote; Top-Modell, Astral ~2.250 €
+    target_price: 2149        # derzeit keine Angebote; Top-Modell, Astral ~2.250 €
     exclude_keywords: ["liquid"]
 
   - id: noctua-5080
     name: "Asus RTX 5080 Noctua OC"
     short_name: "Noctua 5080"
     url: "https://geizhals.de/asus-geforce-rtx-5080-noctua-oc-edition-90yv0lx0-m0na00-a3503515.html"
-    shop_urls:                # direct shop pages (fresher prices than Geizhals)
+    shop_urls:
       - "https://www.alternate.de/ASUS/GeForce-RTX-5080-Noctua-OC-Edition-Grafikkarte/html/product/100147840"
     mpns: ["RTX5080-O16G-NOCTUA", "90YV0M32-M0NA00"]
-    target_price: 2199       # Alternate 2.254 € (ausverkauft); Astral ~2.250 €, TUF ~2.180 €
+    target_price: 2199        # Alternate 2.254 € (ausverkauft); Astral ~2.250 €
+
+  - id: astral-5080
+    name: "Asus ROG Astral RTX 5080 OC"
+    short_name: "Astral 5080"
+    urls:                     # OC + White OC (identical). NOT the non-OC Astral (2640 vs 2760 MHz boost)
+      - "https://geizhals.de/asus-rog-astral-geforce-rtx-5080-oc-90yv0lv0-m0na00-a3382383.html"
+      - "https://geizhals.de/asus-rog-astral-geforce-rtx-5080-white-oc-90yv0lv4-m0na00-a3512598.html"
+    shop_urls:
+      - "https://www.alternate.de/ASUS/GeForce-RTX-5080-ROG-ASTRAL-GAMING-OC-Grafikkarte/html/product/100108199"
+      - "https://www.alternate.de/ASUS/GeForce-RTX-5080-ROG-ASTRAL-GAMING-OC-WHITE-Grafikkarte/html/product/100136036"
+    mpns: ["ROG-ASTRAL-RTX5080-O16G-GAMING", "90YV0LV0-M0NA00", "ROG-ASTRAL-RTX5080-O16G-WHITE", "90YV0LV4-M0NA00"]
+    target_price: 2149        # aktuell ab ~2.250 €; Silent-BIOS laut PCGH extrem leise
 
 compare:
-  - name: "RX 9070 XT vs. RTX 5070 Ti"
-    a: rd-9070xt
-    b: [tuf-5070ti, trio-5070ti]
+  - name: "9070 XT vs. 5070 Ti"
+    a: [rd-9070xt, hellhound-9070xt, tuf-9070xt]
+    b: [tuf-5070ti, trio-5070ti, vanguard-5070ti]
     max_diff: 150

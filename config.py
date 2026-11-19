@@ -96,14 +96,14 @@ class ProductConfig(BaseModel):
 
 
 class CompareRule(BaseModel):
-    """Alert when best price of `b` minus best price of `a` drops below `max_diff`."""
+    """Alert when the cheapest of `b` minus the cheapest of `a` drops below `max_diff`."""
 
     name: str
-    a: str
+    a: list[str]
     b: list[str]
     max_diff: float
 
-    @field_validator("b", mode="before")
+    @field_validator("a", "b", mode="before")
     @classmethod
     def _listify(cls, v):
         return [v] if isinstance(v, str) else v
@@ -125,7 +125,7 @@ class AppConfig(BaseModel):
         if len(ids) != len(set(ids)):
             raise ValueError("duplicate product ids")
         for c in self.compare:
-            for pid in [c.a, *c.b]:
+            for pid in [*c.a, *c.b]:
                 if pid not in ids:
                     raise ValueError(f"compare rule {c.name}: unknown product {pid}")
         return self
