@@ -118,3 +118,27 @@ def test_wrong_variant_url_detected_by_title():
     p = ProductConfig(id="rd", name="RD", url="https://geizhals.de/x-a1.html", exclude_keywords=["limited"])
     with pytest.raises(ParserError):
         _src(html).fetch(p)
+
+
+def test_429_pauses_site_without_retries(monkeypatch):
+    import time as _t
+    from sources.base import PoliteFetcher, SourceError
+    calls = []
+
+    class C:
+        def get(self, url):
+            calls.append(url)
+
+            class R:
+                status_code = 429
+                headers = {"Retry-After": "600"}
+                text = ""
+            return R()
+
+    monkeypatch.setattr(_t, "sleep", lambda s: None)
+    f = PoliteFetcher(PollConfig(delay_between_requests_seconds=1), client=C())
+    with pytest.raises(SourceError):
+        f.get("https://geizhals.de/a")
+    with pytest.raises(SourceError, match="paused"):
+        f.get("https://geizhals.de/b")
+    assert calls == ["https://geizhals.de/a"]  # one request, no retries, second page skipped

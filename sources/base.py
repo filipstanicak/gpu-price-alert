@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import random
 import re
 import time
 from typing import Protocol
@@ -41,11 +42,15 @@ class PoliteFetcher:
             follow_redirects=True,
         )
         self._last_request = 0.0
+        self._paused_until = 0.0  # set after HTTP 429: no more requests to this site until then
 
     def get(self, url: str) -> str:
+        if time.monotonic() < self._paused_until:
+            raise SourceError(f"{self.label}: rate limited (HTTP 429) – paused, skipping {url}")
         last_exc: Exception | None = None
         for attempt, delay in enumerate([0, 10, 30], 1):
-            wait = max(delay, self.poll.delay_between_requests_seconds - (time.monotonic() - self._last_request))
+            gap = self.poll.delay_between_requests_seconds * random.uniform(1.0, 1.5)
+            wait = max(delay, gap - (time.monotonic() - self._last_request))
             if wait > 0:
                 time.sleep(wait)
             self._last_request = time.monotonic()
@@ -54,6 +59,10 @@ class PoliteFetcher:
                 if r.status_code == 200:
                     return r.text
                 last_exc = SourceError(f"HTTP {r.status_code} for {url}")
+                if r.status_code == 429:  # back off for the rest of this run, never hammer
+                    retry_after = r.headers.get("Retry-After", "") if hasattr(r, "headers") else ""
+                    self._paused_until = time.monotonic() + (int(retry_after) if retry_after.isdigit() else 900)
+                    break
                 if r.status_code in (403, 404, 410):
                     break  # retrying won't help
             except httpx.HTTPError as e:
