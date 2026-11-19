@@ -47,6 +47,10 @@ notify:
 
 database: "data/prices.sqlite3"
 
+# Mindfactory and Proshop block requests from GitHub's cloud servers (403 / block page).
+# They work from a home internet connection - remove them here if you run the app on your own PC.
+disabled_sources: ["mindfactory", "proshop"]
+
 products:
   - id: rd-9070xt
     name: "PowerColor Red Devil RX 9070 XT"
