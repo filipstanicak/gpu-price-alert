@@ -22,7 +22,8 @@ _AMOUNT = re.compile(r"€\s*(\d+(?:\.\d{3})*)(?:,(\d{2}|-))?")
 _NOT_SHIPPING_CTX = ("minus", " ab", "nachnahme", "express", "finanzierung", "abholung")
 _IN_STOCK = re.compile(r"(auf lager|lagernd|sofort lieferbar|sofort versandfertig|ab lager)", re.I)
 _RANGE_DAYS = re.compile(r"(\d+)\s*(?:-|–|bis)\s*(\d+)\s*(werktag|tag|woche)", re.I)
-_NO_OFFERS = re.compile(r">\s*(?:Derzeit\s+)?keine\s+Angebote", re.I)
+# Exact sentence of the empty offer list. NOT "keine Angebote": that also appears for other variants in the dropdown.
+_NO_OFFERS = re.compile(r"keine\s+Anbieter\s+f(?:ü|&uuml;)r\s+dieses\s+Produkt", re.I)
 _SINGLE_DAYS = re.compile(r"(\d+)\s*(werktag|tag|woche)", re.I)
 
 

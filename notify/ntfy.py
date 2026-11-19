@@ -4,7 +4,7 @@ import httpx
 
 from config import NtfyConfig
 
-_PRIO = {"high": 4, "default": 3, "low": 2}
+_PRIO = {"urgent": 5, "high": 4, "default": 3, "low": 2, "min": 1}
 
 
 class NtfyNotifier:
@@ -18,11 +18,12 @@ class NtfyNotifier:
             "title": n.title,
             "message": n.message,
             "priority": _PRIO.get(n.priority, 3),
-            "tags": n.tags,
         }
+        if n.tags:
+            payload["tags"] = n.tags
         if n.click_url:
             payload["click"] = n.click_url
-            payload["actions"] = [{"action": "view", "label": "Zum Angebot", "url": n.click_url}]
+            payload["actions"] = [{"action": "view", "label": "Zum Angebot", "url": n.click_url, "clear": True}]
         headers = {"Authorization": f"Bearer {self.cfg.token}"} if self.cfg.token else {}
         r = httpx.post(self.cfg.server.rstrip("/"), json=payload, headers=headers, timeout=15)
         r.raise_for_status()

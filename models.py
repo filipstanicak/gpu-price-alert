@@ -54,6 +54,7 @@ class Alert:
     stats: Stats
     target_price: float = 0
     suspicious: bool = False
+    great: bool = False  # worth buying -> green "Top-Deal"
     extra: dict = field(default_factory=dict)
 
     @property

@@ -78,14 +78,35 @@ def test_spam_protection():
     assert spam_check(t, R, night, False, None) is None
 
 
-def test_format_alert():
-    a = Alert("rd", "PowerColor Red Devil RX 9070 XT", offer(829), ["target"],
-              Stats(median_7d=899, min_ever=869), target_price=850)
+def test_format_alert_top_deal_is_green():
+    a = Alert("rd", "Red Devil 9070 XT", offer(829, shop="alternate.de"), ["target"],
+              Stats(median_7d=899, min_ever=869), target_price=850, great=True)
     n = format_alert(a)
-    assert n.title == "🔥 PowerColor Red Devil RX 9070 XT – 829 € bei Mindfactory"
-    assert "Zielpreis (≤ 850 €) erreicht" in n.message
-    assert "7-Tage-Median: 899 € (−7,8 %) | Bisheriger Tiefstpreis: 869 €" in n.message
-    assert n.priority == "high"
+    assert n.title == "🟢 Top-Deal · Red Devil 9070 XT · 829 €"
+    assert n.message.splitlines() == [
+        "Alternate · auf Lager",
+        "829 € inkl. Versand · Ziel 850 € ✓",
+        "−7,8 % ggü. 7-Tage-Schnitt (899 €)",
+        "Bisheriges Tief: 869 €",
+    ]
+    assert n.priority == "urgent" and "http" not in n.message and n.click_url
+
+
+def test_format_alert_plain_drop_and_suspicious():
+    st = Stats(median_7d=1000, min_ever=990)
+    n = format_alert(Alert("rd", "Red Devil", offer(910), ["drop"], st))
+    assert n.title.startswith("📉 Preissturz ·") and n.priority == "default"
+    s = format_alert(Alert("rd", "Red Devil", offer(350), ["drop", "target"], st, 979, suspicious=True))
+    assert s.title.startswith("⚠️ Prüfen ·") and "Fehlpreis" in s.message
+
+
+def test_great_deal_rules():
+    from rules import is_great_deal
+    st = Stats(median_7d=1000)
+    assert is_great_deal(970, ["target"], st, R, False)
+    assert is_great_deal(880, ["drop"], st, R, False)          # -12 %
+    assert not is_great_deal(900, ["drop"], st, R, False)      # only -10 %
+    assert not is_great_deal(300, ["target"], st, R, True)     # suspicious never green
 
 
 # --- end-to-end through App with fake source + recording dispatcher --------------
@@ -127,7 +148,7 @@ def test_e2e_target_alert_once():
     t0 = datetime(2026, 11, 20, 12, 0, tzinfo=TZ)
     src.prices["rd"] = 1000
     app.run_cycle(t0)
-    assert len(rec.sent) == 1 and rec.sent[0].priority == "high"
+    assert len(rec.sent) == 1 and rec.sent[0].title.startswith("🟢 Top-Deal")
     app.run_cycle(t0 + timedelta(minutes=30))  # same offer -> no duplicate
     assert len(rec.sent) == 1
 
@@ -142,7 +163,7 @@ def test_e2e_drop_and_new_low():
     src.prices["rd"] = 900
     app.run_cycle(t + timedelta(days=4, hours=1))
     assert len(rec.sent) == 1
-    assert "Preissturz" in rec.sent[0].message and "Neuer Tiefstpreis" in rec.sent[0].message
+    assert rec.sent[0].title.startswith("📉 Neuer Tiefstpreis") and "→ neues Tief" in rec.sent[0].message
 
 
 def test_e2e_source_failure_warns_once_then_recovers():
@@ -151,7 +172,7 @@ def test_e2e_source_failure_warns_once_then_recovers():
     src.error = ParserError("layout changed")
     app.run_cycle(t)
     app.run_cycle(t + timedelta(minutes=30))
-    assert [n.title for n in rec.sent] == ["⚠️ Quelle fake liefert keine Daten"]
+    assert [n.title for n in rec.sent] == ["⚠️ Störung · Fake · Red Devil"]
     src.error = None
     src.prices["rd"] = 1000
     app.run_cycle(t + timedelta(hours=1))

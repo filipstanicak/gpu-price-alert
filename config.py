@@ -48,6 +48,7 @@ class RulesConfig(BaseModel):
     realert_cooldown_hours: float = 12
     quiet_hours: tuple[time, time] | None = None
     suspicious_below_median_percent: float = 40.0
+    great_deal_drop_percent: float = 12.0  # green "Top-Deal": target hit or this far below 7-day median
     daily_report_time: time | None = time(20, 0)
 
 
@@ -72,6 +73,7 @@ class NotifyConfig(BaseModel):
 class ProductConfig(BaseModel):
     id: str
     name: str
+    short_name: str = ""  # used in push titles and the daily report
     url: str | None = None
     urls: list[str] = Field(default_factory=list)
     shop_urls: list[str] = Field(default_factory=list)  # direct shop product pages (Mindfactory/Alternate/Proshop)
@@ -87,6 +89,10 @@ class ProductConfig(BaseModel):
         if not self.urls:
             raise ValueError(f"product {self.id}: 'url' or 'urls' required")
         return self
+
+    @property
+    def label(self) -> str:
+        return self.short_name or self.name
 
 
 class CompareRule(BaseModel):

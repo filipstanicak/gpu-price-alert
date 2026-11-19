@@ -18,7 +18,7 @@ from zoneinfo import ZoneInfo
 import rules
 from config import AppConfig, ProductConfig, load_config
 from models import Alert, Offer, Stats
-from notify import Dispatcher, Notification, eur, format_alert
+from notify import Dispatcher, Notification, eur, format_alert, format_back_in_stock, pretty_shop
 from report import daily_report_text
 from sources.base import ParserError, SourceError
 from sources.geizhals import GeizhalsSource
@@ -90,10 +90,7 @@ class App:
             log.info("%-14s %d offers, none valid (whitelist/stock)", product.id, len(offers))
             return None
         if was_available == "0":  # not on the very first run, only on a real 0 -> 1 transition
-            self.notify.send(Notification(
-                title=f"📦 Wieder lieferbar: {product.name} – {eur(best.total_eur)} bei {best.shop}",
-                message=f"Lieferbar: {best.delivery_text}\n👉 {best.offer_url}",
-                click_url=best.offer_url, tags=["package"]))
+            self.notify.send(format_back_in_stock(product.label, best))
         r = self.cfg.rules_default
         stats = self.st.stats(product.id, now, r.median_days)  # history BEFORE this point
         self.st.add_price_point(product.id, best, now)
@@ -102,8 +99,10 @@ class App:
                  eur(best.total_eur), best.shop, len(valid), len(offers),
                  eur(stats.median_7d), eur(stats.min_ever), hits or "-")
         if hits:
-            alert = Alert(product.id, product.name, best, hits, stats, product.target_price,
-                          suspicious=rules.is_suspicious(best.total_eur, stats, r))
+            suspicious = rules.is_suspicious(best.total_eur, stats, r)
+            alert = Alert(product.id, product.label, best, hits, stats, product.target_price,
+                          suspicious=suspicious,
+                          great=rules.is_great_deal(best.total_eur, hits, stats, r, suspicious))
             self.maybe_send_alert(alert, now)
         return best
 
@@ -131,21 +130,21 @@ class App:
             return
         if isinstance(err, ParserError) or n >= FAIL_WARN_AFTER:
             self.notify.send(Notification(
-                title=f"⚠️ Quelle {source} liefert keine Daten",
-                message=f"{product.name}: {err}\nDie App läuft weiter; Meldung kommt nur einmal bis zur Erholung.",
-                priority="default", click_url=product.urls[0], tags=["warning"]))
+                title=f"⚠️ Störung · {source.capitalize()} · {product.label}",
+                message=f"{err}\nDie App läuft weiter. Diese Meldung kommt nur einmal.",
+                priority="low", click_url=product.urls[0]))
             self.st.set_state(f"warned:{key}", "1")
 
     def _source_ok(self, key: str, product: ProductConfig) -> None:
         if self.st.get_state(f"warned:{key}"):
-            self.notify.send(Notification(title=f"✅ Quelle wieder ok: {product.name}",
-                                          message="Preise werden wieder abgerufen.", priority="low"))
+            self.notify.send(Notification(title=f"✅ Wieder ok · {key.split(':')[1].capitalize()} · {product.label}",
+                                          message="Preise werden wieder abgerufen.", priority="min"))
         self.st.set_state(f"warned:{key}", None)
         self.st.set_state(f"fail:{key}", None)
 
     # --- extras -------------------------------------------------------------
     def check_compare_rules(self, bests: dict[str, Offer | None], now: datetime) -> None:
-        names = {p.id: p.name for p in self.cfg.products}
+        names = {p.id: p.label for p in self.cfg.products}
         for c in self.cfg.compare:
             a = bests.get(c.a)
             bs = [bests[b] for b in c.b if bests.get(b)]
@@ -164,11 +163,11 @@ class App:
                         and diff > float(last_diff) - 25):
                     continue
             ok = self.notify.send(Notification(
-                title=f"⚖️ {c.name}: nur {eur(diff)} Unterschied",
-                message=(f"{names[c.a]}: {eur(a.total_eur)} @ {a.shop}\n"
-                         f"{names[b_id]}: {eur(b.total_eur)} @ {b.shop}\n"
-                         f"Schwelle: < {eur(c.max_diff)}"),
-                click_url=b.offer_url, tags=["scales"]))
+                title=f"⚖️ Vergleich · {c.name} · nur {eur(diff)} Abstand",
+                message=(f"{names[c.a]}: {eur(a.total_eur)} · {pretty_shop(a.shop)}\n"
+                         f"{names[b_id]}: {eur(b.total_eur)} · {pretty_shop(b.shop)}\n"
+                         f"Schwelle: unter {eur(c.max_diff)}"),
+                click_url=b.offer_url))
             if ok:
                 self.st.set_state(key, f"{diff}|{now.isoformat()}")
 
@@ -179,9 +178,8 @@ class App:
         today = now.astimezone(self.tz).date().isoformat()
         if self.st.get_state("daily_report") == today:
             return
-        if self.notify.send(Notification(title=f"📊 GPU-Tagesreport {now:%d.%m.}",
-                                         message=daily_report_text(self.cfg, self.st, now), priority="low",
-                                         tags=["bar_chart"])):
+        if self.notify.send(Notification(title=f"📊 Tagesreport · {now.astimezone(self.tz):%d.%m.}",
+                                         message=daily_report_text(self.cfg, self.st, now), priority="low")):
             self.st.set_state("daily_report", today)
 
     # --- scheduling -------------------------------------------------------------
@@ -207,11 +205,11 @@ class App:
 
 
 def sample_notification() -> Notification:
-    offer = Offer(shop="Mindfactory", price_eur=829, shipping_eur=0, in_stock=True,
+    offer = Offer(shop="alternate.de", price_eur=949, shipping_eur=0, in_stock=True,
                   delivery_text="Lagernd, Lieferung 1-2 Werktage", delivery_days_max=0,
                   offer_url="https://geizhals.de/powercolor-red-devil-radeon-rx-9070-xt-a3397494.html")
-    a = Alert("rd-9070xt", "PowerColor Red Devil RX 9070 XT (TEST)", offer, ["target"],
-              Stats(median_7d=899, min_ever=869, history_days=5), target_price=850)
+    a = Alert("rd-9070xt", "Red Devil 9070 XT (TEST)", offer, ["target", "new_low"],
+              Stats(median_7d=1063.99, min_ever=1063.99, history_days=5), target_price=979, great=True)
     return format_alert(a)
 
 

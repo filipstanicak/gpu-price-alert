@@ -1,22 +1,31 @@
-"""Notification formatting + dispatch to all enabled channels."""
+"""Notification formatting + dispatch to all enabled channels.
+
+Push design (short, scannable on a lock screen):
+  title:  <marker> <kind> · <card> · <price>
+  body:   shop · availability
+          price details / comparison lines
+The link sits behind the notification tap + a "Zum Angebot" button, not in the text.
+
+Markers: 🟢 Top-Deal (worth buying)  📉 price drop / new low  ⚠️ check carefully  📦 back in stock
+ntfy cannot colour notifications, so "green" = 🟢 marker + highest priority.
+"""
 from __future__ import annotations
 
 import logging
+import re
 from dataclasses import dataclass, field
 
 from config import NotifyConfig
-from models import Alert
+from models import Alert, Offer
 
 log = logging.getLogger(__name__)
-
-RULE_LABELS = {"target": "Zielpreis", "drop": "Preissturz", "new_low": "Neuer Tiefstpreis"}
 
 
 @dataclass
 class Notification:
     title: str
     message: str
-    priority: str = "default"  # "high" | "default" | "low"
+    priority: str = "default"  # "urgent" | "high" | "default" | "low" | "min"
     click_url: str | None = None
     tags: list[str] = field(default_factory=list)
 
@@ -33,34 +42,55 @@ def pct(v: float) -> str:
     return f"{v:+.1f} %".replace(".", ",").replace("-", "−")
 
 
+def pretty_shop(name: str) -> str:
+    n = re.sub(r"\.(de|net|com|eu|at)$", "", name.strip(), flags=re.I)
+    return n[:1].upper() + n[1:] if n.islower() else n
+
+
+def availability(o: Offer) -> str:
+    if o.in_stock:
+        return "auf Lager"
+    text = re.split(r"[.|]", o.delivery_text or "")[0].strip()
+    return text[:40] or "Lieferzeit unbekannt"
+
+
 def format_alert(a: Alert) -> Notification:
     o, st = a.offer, a.stats
     total = o.total_eur
-    title = f"{'⚠️' if a.suspicious else '🔥'} {a.product_name} – {eur(total)} bei {o.shop}"
-    parts = []
-    for r in a.rules:
-        if r == "target":
-            parts.append(f"Zielpreis (≤ {eur(a.target_price)}) erreicht")
-        elif r == "drop" and st.median_7d:
-            parts.append(f"Preissturz ({pct((total / st.median_7d - 1) * 100)} ggü. 7-Tage-Median)")
-        else:
-            parts.append(RULE_LABELS.get(r, r))
-    lines = [f"Regel: {' + '.join(parts)}"]
-    med = f"{eur(st.median_7d)} ({pct((total / st.median_7d - 1) * 100)})" if st.median_7d else "–"
-    lines.append(f"7-Tage-Median: {med} | Bisheriger Tiefstpreis: {eur(st.min_ever)}")
-    ship = "inkl. Versand" if not o.shipping_eur else f"inkl. {eur(o.shipping_eur)} Versand"
-    lines.append(f"Preis: {eur(o.price_eur)} ({ship})")
-    lines.append(f"Lieferbar: {'sofort' if o.in_stock else ''} {o.delivery_text}".strip())
     if a.suspicious:
-        lines.append("⚠️ VERDÄCHTIG: weit unter Median – Fehlpreis oder falsches Produkt? Genau prüfen!")
-    lines.append(f"👉 {o.offer_url}")
+        marker, kind, prio = "⚠️", "Prüfen", "high"
+    elif a.great:
+        marker, kind, prio = "🟢", "Top-Deal", "urgent"
+    elif "new_low" in a.rules:
+        marker, kind, prio = "📉", "Neuer Tiefstpreis", "default"
+    else:
+        marker, kind, prio = "📉", "Preissturz", "default"
+
+    lines = [f"{pretty_shop(o.shop)} · {availability(o)}"]
+    ship = "inkl. Versand" if not o.shipping_eur else f"inkl. {eur(o.shipping_eur)} Versand"
+    price_line = f"{eur(total)} {ship}"
+    if a.target_price:
+        price_line += f" · Ziel {eur(a.target_price)}" + (" ✓" if "target" in a.rules else "")
+    lines.append(price_line)
+    if st.median_7d:
+        diff = (total / st.median_7d - 1) * 100
+        lines.append(f"{pct(diff)} ggü. 7-Tage-Schnitt ({eur(st.median_7d)})")
+    if st.min_ever is not None:
+        lines.append(f"Bisheriges Tief: {eur(st.min_ever)}" + (" → neues Tief" if "new_low" in a.rules else ""))
+    if a.suspicious:
+        lines.append("Ungewöhnlich günstig – evtl. Fehlpreis oder falsches Produkt.")
+
     return Notification(
-        title=title,
+        title=f"{marker} {kind} · {a.product_name} · {eur(total)}",
         message="\n".join(lines),
-        priority="high" if a.is_target_hit else "default",
+        priority=prio,
         click_url=o.offer_url,
-        tags=["moneybag"] if a.is_target_hit else ["chart_with_downwards_trend"],
     )
+
+
+def format_back_in_stock(label: str, o: Offer) -> Notification:
+    return Notification(title=f"📦 Wieder lieferbar · {label} · {eur(o.total_eur)}",
+                        message=f"{pretty_shop(o.shop)} · {availability(o)}", click_url=o.offer_url)
 
 
 class Dispatcher:

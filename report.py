@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 from config import AppConfig, load_config
-from notify import eur, pct
+from notify import eur, pct, pretty_shop
 from storage import Storage
 
 
@@ -32,12 +32,19 @@ def summary_rows(cfg: AppConfig, st: Storage, now: datetime) -> list[dict]:
 
 
 def daily_report_text(cfg: AppConfig, st: Storage, now: datetime) -> str:
+    labels = {p.id: p.label for p in cfg.products}
     lines = []
     for r in summary_rows(cfg, st, now):
-        chg = ""
+        if r["current"] is None or st.get_state(f"avail:{r['id']}") == "0":
+            lines.append(f"▫️ {labels[r['id']]}: nicht lieferbar" + (f" · Ziel {eur(r['target'])}" if r["target"] else ""))
+            continue
+        hit = r["target"] and r["current"] <= r["target"]
+        parts = [f"{eur(r['current'])} · {pretty_shop(r['shop'])}"]
         if r["change"] is not None and r["yesterday"]:
-            chg = f" ({pct(r['change'] / r['yesterday'] * 100)} ggü. gestern)"
-        lines.append(f"• {r['name']}: {eur(r['current'])} @ {r['shop'] or '–'}{chg} | Tief: {eur(r['min_ever'])}")
+            parts.append(f"{pct(r['change'] / r['yesterday'] * 100)} zu gestern")
+        if r["target"]:
+            parts.append(f"Ziel {eur(r['target'])}")
+        lines.append(f"{'🟢' if hit else '▪️'} {labels[r['id']]}: " + " · ".join(parts))
     return "\n".join(lines)
 
 

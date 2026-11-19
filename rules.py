@@ -76,6 +76,16 @@ def is_suspicious(total: float, stats: Stats, r: RulesConfig) -> bool:
     return bool(stats.median_7d) and total < stats.median_7d * r.suspicious_below_median_percent / 100
 
 
+def is_great_deal(total: float, hits: list[str], stats: Stats, r: RulesConfig, suspicious: bool) -> bool:
+    """A deal worth buying: target price reached, or a really big drop vs. the 7-day median.
+    Suspiciously cheap prices (possible mispricing/wrong product) are never marked green."""
+    if suspicious:
+        return False
+    if "target" in hits:
+        return True
+    return bool(stats.median_7d) and total <= stats.median_7d * (1 - r.great_deal_drop_percent / 100)
+
+
 def in_quiet_hours(now_local: datetime, quiet: tuple[time, time] | None) -> bool:
     if not quiet:
         return False
