@@ -82,12 +82,12 @@ def test_format_alert_top_deal_is_green():
     a = Alert("rd", "Red Devil 9070 XT", offer(829, shop="alternate.de"), ["target"],
               Stats(median_7d=899, min_ever=869), target_price=850, great=True)
     n = format_alert(a)
-    assert n.title == "🟢 Top-Deal · Red Devil 9070 XT · 829 €"
+    assert n.title == "🟢 Top-Deal: Red Devil 9070 XT · 829 €"
     assert n.message.splitlines() == [
+        "✓ 21 € unter Ziel (850 €)",
+        "70 € unter 7-Tage-Schnitt (−7,8 %)",
+        "Tiefstpreis bisher: 869 €",
         "Alternate · auf Lager",
-        "829 € inkl. Versand · Ziel 850 € ✓",
-        "−7,8 % ggü. 7-Tage-Schnitt (899 €)",
-        "Bisheriges Tief: 869 €",
     ]
     assert n.priority == "urgent" and "http" not in n.message and n.click_url
 
@@ -95,9 +95,9 @@ def test_format_alert_top_deal_is_green():
 def test_format_alert_plain_drop_and_suspicious():
     st = Stats(median_7d=1000, min_ever=990)
     n = format_alert(Alert("rd", "Red Devil", offer(910), ["drop"], st))
-    assert n.title.startswith("📉 Preissturz ·") and n.priority == "default"
+    assert n.title.startswith("📉 Preissturz:") and n.priority == "default"
     s = format_alert(Alert("rd", "Red Devil", offer(350), ["drop", "target"], st, 979, suspicious=True))
-    assert s.title.startswith("⚠️ Prüfen ·") and "Fehlpreis" in s.message
+    assert s.title.startswith("⚠️ Prüfen:") and "Fehlpreis" in s.message
 
 
 def test_great_deal_rules():
@@ -163,7 +163,7 @@ def test_e2e_drop_and_new_low():
     src.prices["rd"] = 900
     app.run_cycle(t + timedelta(days=4, hours=1))
     assert len(rec.sent) == 1
-    assert rec.sent[0].title.startswith("📉 Neuer Tiefstpreis") and "→ neues Tief" in rec.sent[0].message
+    assert rec.sent[0].title.startswith("📉 Tiefstpreis:") and "Neuer Tiefstpreis (bisher" in rec.sent[0].message
 
 
 def test_e2e_source_failure_warns_once_then_recovers():
@@ -172,7 +172,7 @@ def test_e2e_source_failure_warns_once_then_recovers():
     src.error = ParserError("layout changed")
     app.run_cycle(t)
     app.run_cycle(t + timedelta(minutes=30))
-    assert [n.title for n in rec.sent] == ["⚠️ Störung · Fake · Red Devil"]
+    assert [n.title for n in rec.sent] == ["⚠️ Störung: Fake · Red Devil"]
     src.error = None
     src.prices["rd"] = 1000
     app.run_cycle(t + timedelta(hours=1))

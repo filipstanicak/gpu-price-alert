@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 from config import AppConfig, load_config
-from notify import eur, pct, pretty_shop
+from notify import eur, eur_whole, pct, pretty_shop
 from storage import Storage
 
 
@@ -44,8 +44,7 @@ def _split_label(label: str) -> tuple[str, str]:
     return ("RX " if chip.startswith("9") else "RTX ") + chip, label[:m.start()].strip()
 
 
-def _whole_eur(v: float) -> str:
-    return eur(float(round(v)))
+_whole_eur = eur_whole
 
 
 def daily_report(cfg: AppConfig, st: Storage, now: datetime) -> tuple[str, str]:

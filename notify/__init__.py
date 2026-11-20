@@ -54,6 +54,24 @@ def availability(o: Offer) -> str:
     return text[:40] or "Lieferzeit unbekannt"
 
 
+def eur_whole(v: float) -> str:
+    return eur(float(round(v)))
+
+
+def target_line(price: float, target: float | None) -> str | None:
+    if not target:
+        return None
+    d = price - target
+    return f"✓ {eur_whole(-d)} unter Ziel ({eur(target)})" if d <= 0 else f"{eur_whole(d)} über Ziel ({eur(target)})"
+
+
+def shop_line(o: Offer) -> str:
+    line = f"{pretty_shop(o.shop)} · {availability(o)}"
+    if o.shipping_eur:  # only when shipping is counted (include_shipping: true)
+        line += f" · inkl. {eur(o.shipping_eur)} Versand"
+    return line
+
+
 def format_alert(a: Alert) -> Notification:
     o, st = a.offer, a.stats
     total = o.total_eur
@@ -62,39 +80,39 @@ def format_alert(a: Alert) -> Notification:
     elif a.great:
         marker, kind, prio = "🟢", "Top-Deal", "urgent"
     elif "new_low" in a.rules:
-        marker, kind, prio = "📉", "Neuer Tiefstpreis", "default"
+        marker, kind, prio = "📉", "Tiefstpreis", "default"
     else:
         marker, kind, prio = "📉", "Preissturz", "default"
 
-    lines = [f"{pretty_shop(o.shop)} · {availability(o)}"]
-    if o.shipping_eur is None:  # shipping ignored: card price only
-        price_line = eur(total)
-    elif o.shipping_eur == 0:
-        price_line = f"{eur(total)} inkl. Versand"
-    else:
-        price_line = f"{eur(total)} inkl. {eur(o.shipping_eur)} Versand"
-    if a.target_price:
-        price_line += f" · Ziel {eur(a.target_price)}" + (" ✓" if "target" in a.rules else "")
-    lines.append(price_line)
+    lines = []
+    if t := target_line(total, a.target_price):
+        lines.append(t)
     if st.median_7d:
-        diff = (total / st.median_7d - 1) * 100
-        lines.append(f"{pct(diff)} ggü. 7-Tage-Schnitt ({eur(st.median_7d)})")
-    if st.min_ever is not None:
-        lines.append(f"Bisheriges Tief: {eur(st.min_ever)}" + (" → neues Tief" if "new_low" in a.rules else ""))
+        d = total - st.median_7d
+        rel = "unter" if d < 0 else "über"
+        lines.append(f"{eur_whole(abs(d))} {rel} 7-Tage-Schnitt ({pct(d / st.median_7d * 100)[:-2].strip()} %)")
+    if "new_low" in a.rules and st.min_ever is not None:
+        lines.append(f"Neuer Tiefstpreis (bisher {eur(st.min_ever)})")
+    elif st.min_ever is not None:
+        lines.append(f"Tiefstpreis bisher: {eur(st.min_ever)}")
+    lines.append(shop_line(o))
     if a.suspicious:
         lines.append("Ungewöhnlich günstig – evtl. Fehlpreis oder falsches Produkt.")
 
     return Notification(
-        title=f"{marker} {kind} · {a.product_name} · {eur(total)}",
+        title=f"{marker} {kind}: {a.product_name} · {eur(total)}",
         message="\n".join(lines),
         priority=prio,
         click_url=o.offer_url,
     )
 
 
-def format_back_in_stock(label: str, o: Offer) -> Notification:
-    return Notification(title=f"📦 Wieder lieferbar · {label} · {eur(o.total_eur)}",
-                        message=f"{pretty_shop(o.shop)} · {availability(o)}", click_url=o.offer_url)
+def format_back_in_stock(label: str, o: Offer, target: float | None = None) -> Notification:
+    lines = [shop_line(o)]
+    if t := target_line(o.total_eur, target):
+        lines.append(t)
+    return Notification(title=f"📦 Wieder lieferbar: {label} · {eur(o.total_eur)}",
+                        message="\n".join(lines), click_url=o.offer_url)
 
 
 class Dispatcher:

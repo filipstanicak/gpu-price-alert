@@ -91,7 +91,7 @@ class App:
             log.info("%-14s %d offers, none valid (whitelist/stock)", product.id, len(offers))
             return None
         if was_available == "0":  # not on the very first run, only on a real 0 -> 1 transition
-            self.notify.send(format_back_in_stock(product.label, best))
+            self.notify.send(format_back_in_stock(product.label, best, product.target_price))
         r = self.cfg.rules_default
         stats = self.st.stats(product.id, now, r.median_days)  # history BEFORE this point
         self.st.add_price_point(product.id, best, now)
@@ -131,14 +131,14 @@ class App:
             return
         if isinstance(err, ParserError) or n >= FAIL_WARN_AFTER:
             self.notify.send(Notification(
-                title=f"⚠️ Störung · {source.capitalize()} · {product.label}",
+                title=f"⚠️ Störung: {source.capitalize()} · {product.label}",
                 message=f"{err}\nDie App läuft weiter. Diese Meldung kommt nur einmal.",
                 priority="low", click_url=product.urls[0]))
             self.st.set_state(f"warned:{key}", "1")
 
     def _source_ok(self, key: str, product: ProductConfig) -> None:
         if self.st.get_state(f"warned:{key}"):
-            self.notify.send(Notification(title=f"✅ Wieder ok · {key.split(':')[1].capitalize()} · {product.label}",
+            self.notify.send(Notification(title=f"✅ Wieder ok: {key.split(':')[1].capitalize()} · {product.label}",
                                           message="Preise werden wieder abgerufen.", priority="min"))
         self.st.set_state(f"warned:{key}", None)
         self.st.set_state(f"fail:{key}", None)
@@ -165,10 +165,10 @@ class App:
                         and diff > float(last_diff) - 25):
                     continue
             ok = self.notify.send(Notification(
-                title=f"⚖️ Vergleich · {c.name} · nur {eur(diff)} Abstand",
-                message=(f"{names[a_id]}: {eur(a.total_eur)} · {pretty_shop(a.shop)}\n"
-                         f"{names[b_id]}: {eur(b.total_eur)} · {pretty_shop(b.shop)}\n"
-                         f"Schwelle: unter {eur(c.max_diff)}"),
+                title=f"⚖️ {c.name}: nur {eur(diff)} Abstand",
+                message=(f"{names[a_id]}: {eur(a.total_eur)} ({pretty_shop(a.shop)})\n"
+                         f"{names[b_id]}: {eur(b.total_eur)} ({pretty_shop(b.shop)})\n"
+                         f"Meldung ab weniger als {eur(c.max_diff)} Abstand"),
                 click_url=b.offer_url))
             if ok:
                 self.st.set_state(key, f"{diff}|{now.isoformat()}")
