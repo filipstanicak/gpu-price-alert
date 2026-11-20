@@ -227,3 +227,11 @@ def test_is_due_respects_interval_and_hot_phase():
     app.st.set_state("last_run", hot.isoformat())
     assert not app.is_due(hot + timedelta(minutes=5))
     assert app.is_due(hot + timedelta(minutes=14))          # every 15-min trigger polls in the hot phase
+
+
+def test_report_label_split():
+    from report import _split_label
+    assert _split_label("Red Devil 9070 XT") == ("RX 9070 XT", "Red Devil")
+    assert _split_label("Gaming Trio 5070 Ti") == ("RTX 5070 Ti", "Gaming Trio")
+    assert _split_label("Astral 5080") == ("RTX 5080", "Astral")
+    assert _split_label("Sonstwas") == ("", "Sonstwas")

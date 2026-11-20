@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import re
 import sys
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
@@ -31,21 +32,60 @@ def summary_rows(cfg: AppConfig, st: Storage, now: datetime) -> list[dict]:
     return rows
 
 
-def daily_report_text(cfg: AppConfig, st: Storage, now: datetime) -> str:
+_CHIP = re.compile(r"\s*(\d{4}(?:\s+(?:XT|Ti))?)$")
+
+
+def _split_label(label: str) -> tuple[str, str]:
+    """'Red Devil 9070 XT' -> ('RX 9070 XT', 'Red Devil'); 'Astral 5080' -> ('RTX 5080', 'Astral')."""
+    m = _CHIP.search(label)
+    if not m:
+        return "", label
+    chip = m.group(1)
+    return ("RX " if chip.startswith("9") else "RTX ") + chip, label[:m.start()].strip()
+
+
+def _whole_eur(v: float) -> str:
+    return eur(float(round(v)))
+
+
+def daily_report(cfg: AppConfig, st: Storage, now: datetime) -> tuple[str, str]:
+    """Returns (title_suffix, body). Grouped by GPU, cheapest first, distance to target per card."""
     labels = {p.id: p.label for p in cfg.products}
-    lines = []
+    groups: dict[str, list[tuple[float, str]]] = {}
+    unavailable: dict[str, list[str]] = {}
+    hits = 0
     for r in summary_rows(cfg, st, now):
+        chip, model = _split_label(labels[r["id"]])
         if r["current"] is None or st.get_state(f"avail:{r['id']}") == "0":
-            lines.append(f"▫️ {labels[r['id']]}: nicht lieferbar" + (f" · Ziel {eur(r['target'])}" if r["target"] else ""))
+            unavailable.setdefault(chip, []).append(model)
+            groups.setdefault(chip, [])
             continue
-        hit = r["target"] and r["current"] <= r["target"]
-        parts = [f"{eur(r['current'])} · {pretty_shop(r['shop'])}"]
+        cur, target = r["current"], r["target"]
+        line = f"{model}: {_whole_eur(cur)}"
+        if target:
+            diff = cur - target
+            if diff <= 0:
+                hits += 1
+                line = "🟢 " + line + " · Ziel erreicht"
+            else:
+                line += f" · {_whole_eur(diff)} über Ziel"
         if r["change"] is not None and r["yesterday"]:
-            parts.append(f"{pct(r['change'] / r['yesterday'] * 100)} zu gestern")
-        if r["target"]:
-            parts.append(f"Ziel {eur(r['target'])}")
-        lines.append(f"{'🟢' if hit else '▪️'} {labels[r['id']]}: " + " · ".join(parts))
-    return "\n".join(lines)
+            ch = r["change"] / r["yesterday"] * 100
+            if abs(ch) >= 0.5:
+                line += f" · {'↓' if ch < 0 else '↑'} {abs(ch):.0f} %".replace(".", ",")
+        groups.setdefault(chip, []).append((cur, line))
+    blocks = []
+    for chip, rows in groups.items():
+        lines = [line for _, line in sorted(rows)]
+        if unavailable.get(chip):
+            lines.append("nicht lieferbar: " + ", ".join(unavailable[chip]))
+        blocks.append("\n".join([chip] + lines) if chip else "\n".join(lines))
+    suffix = f"🟢 {hits} am Ziel" if hits else "noch nichts am Ziel"
+    return suffix, "\n\n".join(blocks)
+
+
+def daily_report_text(cfg: AppConfig, st: Storage, now: datetime) -> str:
+    return daily_report(cfg, st, now)[1]
 
 
 def print_table(rows: list[dict]) -> None:

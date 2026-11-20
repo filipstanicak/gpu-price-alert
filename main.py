@@ -20,7 +20,7 @@ import rules
 from config import AppConfig, ProductConfig, load_config
 from models import Alert, Offer, Stats
 from notify import Dispatcher, Notification, eur, format_alert, format_back_in_stock, pretty_shop
-from report import daily_report_text
+from report import daily_report
 from sources.base import ParserError, SourceError
 from sources.geizhals import GeizhalsSource
 from sources.shops import SHOP_SOURCES
@@ -180,8 +180,9 @@ class App:
         today = now.astimezone(self.tz).date().isoformat()
         if self.st.get_state("daily_report") == today:
             return
-        if self.notify.send(Notification(title=f"📊 Tagesreport · {now.astimezone(self.tz):%d.%m.}",
-                                         message=daily_report_text(self.cfg, self.st, now), priority="low",
+        suffix, body = daily_report(self.cfg, self.st, now)
+        if self.notify.send(Notification(title=f"📊 Tagesreport {now.astimezone(self.tz):%d.%m.} · {suffix}",
+                                         message=body, priority="low",
                                          click_url=self.cfg.dashboard_url)):
             self.st.set_state("daily_report", today)
 
