@@ -211,3 +211,19 @@ def test_compare_rule_uses_cheapest_on_each_side():
     assert len(rec.sent) == 1 and "140 €" in rec.sent[0].title and "a2" in rec.sent[0].message
     app.check_compare_rules({"a1": offer(1000), "a2": offer(950), "b1": offer(1200), "b2": offer(1200)}, t)
     assert len(rec.sent) == 1  # 250 € gap -> no alert
+
+
+def test_is_due_respects_interval_and_hot_phase():
+    from config import HotPhase, PollConfig
+    app, _, _ = make_app()
+    app.cfg.poll = PollConfig(default_interval_minutes=30, hot_phase=HotPhase(
+        start=datetime(2026, 11, 26, tzinfo=TZ), end=datetime(2026, 11, 30, 23, 59, tzinfo=TZ), interval_minutes=15))
+    normal = datetime(2026, 11, 20, 12, 0, tzinfo=TZ)
+    assert app.is_due(normal)  # first run ever
+    app.st.set_state("last_run", normal.isoformat())
+    assert not app.is_due(normal + timedelta(minutes=15))  # 15-min trigger, normal phase -> skip
+    assert app.is_due(normal + timedelta(minutes=29))      # within 3 min tolerance of 30
+    hot = datetime(2026, 11, 27, 12, 0, tzinfo=TZ)
+    app.st.set_state("last_run", hot.isoformat())
+    assert not app.is_due(hot + timedelta(minutes=5))
+    assert app.is_due(hot + timedelta(minutes=14))          # every 15-min trigger polls in the hot phase

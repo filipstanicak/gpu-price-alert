@@ -185,13 +185,25 @@ class App:
             self.st.set_state("daily_report", today)
 
     # --- scheduling -------------------------------------------------------------
+    def interval_minutes(self, now: datetime) -> int:
+        p = self.cfg.poll
+        if p.hot_phase and p.hot_phase.start <= now <= p.hot_phase.end:
+            return p.hot_phase.interval_minutes
+        return p.default_interval_minutes
+
     def interval_seconds(self, now: datetime) -> float:
         p = self.cfg.poll
-        minutes = p.default_interval_minutes
-        if p.hot_phase and p.hot_phase.start <= now <= p.hot_phase.end:
-            minutes = p.hot_phase.interval_minutes
-        secs = minutes * 60 + random.uniform(-p.jitter_seconds, p.jitter_seconds)
+        secs = self.interval_minutes(now) * 60 + random.uniform(-p.jitter_seconds, p.jitter_seconds)
         return max(secs, 600)  # hard floor: never faster than every 10 minutes
+
+    def is_due(self, now: datetime) -> bool:
+        """For --once runs started by an external trigger (e.g. every 15 min): poll only when the
+        configured interval has passed. 3 min tolerance absorbs trigger delays; never under 10 min."""
+        last = self.st.get_state("last_run")
+        if not last:
+            return True
+        gap = timedelta(minutes=max(10, self.interval_minutes(now) - 3))
+        return now - datetime.fromisoformat(last) >= gap
 
     def run_forever(self) -> None:
         until = self.cfg.poll.run_until
@@ -248,9 +260,9 @@ def main() -> None:
         if cfg.poll.run_until and now > cfg.poll.run_until:
             log.info("run_until %s reached – nothing to do", cfg.poll.run_until)
             return
-        last = app.st.get_state("last_run")
-        if last and not args.force and now - datetime.fromisoformat(last) < timedelta(minutes=10):
-            log.info("last run %s less than 10 min ago – skipping (use --force)", last)
+        if not args.force and not app.is_due(now):
+            log.info("not due yet (last run %s, interval %d min) – skipping (use --force)",
+                     app.st.get_state("last_run"), app.interval_minutes(now))
             return
         app.st.set_state("last_run", now.isoformat())
         app.run_cycle(now)
