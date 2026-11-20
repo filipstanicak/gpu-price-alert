@@ -4,8 +4,9 @@ on:
   # Main trigger: cron-job.org calls the workflow_dispatch API every 15 min (GitHub's own
   # schedule fires very unreliably for this repo). The schedule below is only a backup.
   # main.py --once decides itself whether a poll is due (30 min normally, 15 min in the hot phase).
+  # Off-peak minutes on purpose: GitHub delays/drops scheduled runs most at the start of the hour.
   schedule:
-    - cron: "*/15 * * * *"
+    - cron: "4,19,34,49 * * * *"
   workflow_dispatch:
     inputs:
       force:
