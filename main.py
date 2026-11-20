@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import logging
+import os
 import random
 import sys
 import time as _time
@@ -266,6 +267,10 @@ def main() -> None:
             return
         app.st.set_state("last_run", now.isoformat())
         app.run_cycle(now)
+        # Tell the GitHub workflow that prices were actually fetched (gates the Pages deploy).
+        if gh_out := os.environ.get("GITHUB_OUTPUT"):
+            with open(gh_out, "a", encoding="utf-8") as f:
+                f.write("polled=true\n")
     else:
         app.run_forever()
 
