@@ -85,21 +85,19 @@ products:
     target_price: 999         # ~9 % unter aktuell 1.099 € (Mindfactory); laut TechPowerUp leiseste/kühlste, Quiet-BIOS
 
   - id: mercury-9070xt
-    name: "XFX Mercury RX 9070 XT (Gaming / OC Gaming RGB)"
+    name: "XFX Mercury RX 9070 XT OC Gaming RGB"
     short_name: "Mercury 9070 XT"
-    urls:                     # OC Gaming RGB black + white and non-OC Gaming (2970 MHz boost, user wants it too),
-      # each also as "A" revision. NOT Magnetic Air (different fan design), NOT bulk (no retail box/accessories)
+    urls:                     # OC Gaming RGB black + white (each also as "A" revision), identical specs.
+      # NOT non-OC Gaming (2970 MHz, 2x 8-pin; user removed it), NOT Magnetic Air (different fan design)
       - "https://geizhals.de/xfx-mercury-radeon-rx-9070-xt-oc-gaming-edition-with-rgb-rx-97trgbbb9-a3430414.html"
       - "https://geizhals.de/xfx-mercury-radeon-rx-9070-xt-oc-gaming-edition-with-rgb-rx-97trgbbba-a3430418.html"
       - "https://geizhals.de/xfx-mercury-radeon-rx-9070-xt-oc-white-gaming-edition-with-rgb-rx-97trgbbw9-a3430416.html"
       - "https://geizhals.de/xfx-mercury-radeon-rx-9070-xt-oc-white-gaming-edition-with-rgb-rx-97trgbbwa-a3960653.html"
-      - "https://geizhals.de/xfx-mercury-radeon-rx-9070-xt-gaming-edition-rx-97tmercb9-a3430425.html"
-      - "https://geizhals.de/xfx-mercury-radeon-rx-9070-xt-gaming-edition-rx-97tmercba-a3463716.html"
     shop_urls:
       - "https://www.alternate.de/XFX/Radeon-RX-9070-XT-OC-Mercury-RGB-Grafikkarte/html/product/100117812"
-    mpns: ["RX-97TRGBBB9", "RX-97TRGBBBA", "RX-97TRGBBW9", "RX-97TRGBBWA", "RX-97TMERCB9", "RX-97TMERCBA"]
+    mpns: ["RX-97TRGBBB9", "RX-97TRGBBBA", "RX-97TRGBBW9", "RX-97TRGBBWA"]
     target_price: 949         # ~8 % unter aktuell 1.029 € (nbb); 36 cm lang, kein Quiet-BIOS
-    exclude_keywords: ["magnetic", "bulk"]
+    exclude_keywords: ["magnetic"]
 
   - id: nitro-9070xt
     name: "Sapphire Nitro+ RX 9070 XT"
