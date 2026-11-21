@@ -111,19 +111,7 @@ products:
     mpns: ["11348-01-20G", "11348-10-20G", "11348-12-20G", "11348-08-20G", "11348-09-20G"]
     target_price: 949         # Amazon-Angebot 960 € ist weg, aktuell 1.044 € (Galaxus); ~9 % darunter
 
-  # ---------------- Monitore (exactly these two models, no siblings) ----------------
-  - id: aw2725d
-    name: "Dell Alienware AW2725D"
-    short_name: "Alienware AW2725D"
-    group: "Monitore"
-    urls:                     # NOT AW2725DF / AW2725DM (different models)
-      - "https://geizhals.de/dell-alienware-27-280hz-qd-oled-gaming-monitor-aw2725d-210-brzw-a3535801.html"
-    shop_urls:
-      - "https://www.alternate.de/Dell/Alienware-AW2725D-QD-OLED-Gaming-Monitor/html/product/100161448"
-    mpns: ["210-BRZW", "AW2725D", "GAME-AW2725D"]  # GAME-AW2725D = Alternate's MPN
-    target_price: 349         # ~8 % unter aktuell 379 € (nbb)
-    exclude_keywords: ["aw2725df", "aw2725dm"]
-
+  # ---------------- Monitore (exactly these models, no siblings) ----------------
   - id: xg27aqdmes
     name: "ASUS ROG Strix OLED XG27AQDMES"
     short_name: "ASUS XG27AQDMES"
@@ -133,5 +121,15 @@ products:
     mpns: ["90LM0C80-B01171", "XG27AQDMES"]
     target_price: 379         # ~7 % unter aktuell 410 € (nbb)
     exclude_keywords: ["xg27aqdmesz", "xg27aqdmg"]
+
+  - id: xg27aqdng
+    name: "ASUS ROG Strix OLED XG27AQDNG"
+    short_name: "ASUS XG27AQDNG"
+    group: "Monitore"
+    urls:                     # NOT XG27ACDNG / XG27AQDMG (different models)
+      - "https://geizhals.de/asus-rog-strix-oled-xg27aqdng-90lm0ch0-b01971-a3689594.html"
+    mpns: ["90LM0CH0-B01971", "XG27AQDNG"]
+    target_price: 519         # ~9 % unter aktuell 567 € (Proshop); war schon ab ~525 € gelistet
+    exclude_keywords: ["xg27acdng", "xg27aqdmg"]
 
 compare: []
