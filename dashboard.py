@@ -36,7 +36,7 @@ def build_data(cfg: AppConfig, st: Storage, now: datetime) -> dict:
         avail = st.get_state(f"avail:{p.id}")
         last = pts[-1] if pts else None
         cards.append({
-            "id": p.id, "label": p.label, "name": p.name, "group": group_of(p.name),
+            "id": p.id, "label": p.label, "name": p.name, "group": p.group or group_of(p.name),
             "target": p.target_price or None,
             "available": avail == "1",
             "current": round(last["total_eur"], 2) if last and avail == "1" else None,
@@ -47,7 +47,7 @@ def build_data(cfg: AppConfig, st: Storage, now: datetime) -> dict:
             "points": points,
         })
     return {"generated": int(now.timestamp() * 1000), "cards": cards,
-            "groups": [label for _, label in GROUPS] + ["Weitere"]}
+            "groups": list(dict.fromkeys(c["group"] for c in cards))}
 
 
 def render(data: dict) -> str:

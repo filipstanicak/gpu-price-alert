@@ -74,6 +74,7 @@ class ProductConfig(BaseModel):
     id: str
     name: str
     short_name: str = ""  # used in push titles and the daily report
+    group: str = ""       # heading in report/overview page; default: derived from the GPU name
     url: str | None = None
     urls: list[str] = Field(default_factory=list)
     shop_urls: list[str] = Field(default_factory=list)  # direct shop product pages (Mindfactory/Alternate/Proshop)

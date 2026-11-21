@@ -50,11 +50,13 @@ _whole_eur = eur_whole
 def daily_report(cfg: AppConfig, st: Storage, now: datetime) -> tuple[str, str]:
     """Returns (title_suffix, body). Grouped by GPU, cheapest first, distance to target per card."""
     labels = {p.id: p.label for p in cfg.products}
+    fixed_group = {p.id: p.group for p in cfg.products if p.group}
     groups: dict[str, list[tuple[float, str]]] = {}
     unavailable: dict[str, list[str]] = {}
     hits = 0
     for r in summary_rows(cfg, st, now):
-        chip, model = _split_label(labels[r["id"]])
+        chip, model = ((fixed_group[r["id"]], labels[r["id"]]) if r["id"] in fixed_group
+                       else _split_label(labels[r["id"]]))
         if r["current"] is None or st.get_state(f"avail:{r['id']}") == "0":
             unavailable.setdefault(chip, []).append(model)
             groups.setdefault(chip, [])
