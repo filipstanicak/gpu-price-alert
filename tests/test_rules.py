@@ -235,3 +235,20 @@ def test_report_label_split():
     assert _split_label("Gaming Trio 5070 Ti") == ("RTX 5070 Ti", "Gaming Trio")
     assert _split_label("Astral 5080") == ("RTX 5080", "Astral")
     assert _split_label("Sonstwas") == ("", "Sonstwas")
+
+
+def test_e2e_geizhals_down_skips_card_instead_of_partial_price():
+    """Geizhals 429 + direct shop ok must not record the shop's higher price or flip availability."""
+    from sources.base import SourceError
+    gh, shop = FakeSource(), FakeSource()
+    gh.name, shop.name = "geizhals", "alternate"
+    cfg = AppConfig(products=[P], rules_default=R)
+    rec = RecDispatcher()
+    app = App(cfg, Storage(":memory:"), rec, sources=[gh, shop])
+    t = datetime(2026, 11, 20, 12, 0, tzinfo=TZ)
+    gh.prices["rd"], shop.prices["rd"] = 999, 1057
+    app.run_cycle(t)
+    gh.error = SourceError("HTTP 429")
+    app.run_cycle(t + timedelta(minutes=30))
+    assert [p["total_eur"] for p in app.st.history("rd")] == [999]
+    assert app.st.get_state("avail:rd") == "1"

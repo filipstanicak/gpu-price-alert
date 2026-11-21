@@ -77,6 +77,12 @@ class App:
                 self._source_ok(key, product)
             except (SourceError, ParserError) as e:
                 self._source_failed(key, product, src.name, e)
+                if src.name == "geizhals":
+                    # Geizhals carries most shops. Without it the "best" price is just the one or two
+                    # directly read shops: a fake price spike and a fake "nicht lieferbar".
+                    # So skip the card this cycle instead of recording partial data.
+                    log.info("%-14s skipped this cycle – geizhals unavailable", product.id)
+                    return None
         return prefer_direct_offers(offers) if any_ok else None
 
     def process_product(self, product: ProductConfig, now: datetime) -> Offer | None:
