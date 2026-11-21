@@ -75,19 +75,14 @@ products:
     mpns: ["RX9070XT 16G-E/OC", "RX9070XT 16G-E/OC/WHITE", "RX9070XT 16G-E/OC/LIMITED", "RX9070XT 16G-E/OC/BP"]
     target_price: 979         # ~8 % unter aktuell 1.064 €; Hellhound ~999 €
 
-  - id: tuf-9070xt
-    name: "Asus TUF Gaming RX 9070 XT OC"
-    short_name: "TUF 9070 XT"
-    urls:                     # Standard + COD BO7 / Onimusha Special Edition (same card, game-themed bundle)
-      - "https://geizhals.de/asus-tuf-gaming-radeon-rx-9070-xt-oc-a3430250.html"
-      - "https://geizhals.de/asus-tuf-gaming-radeon-rx-9070-xt-cod-bo7-special-edition-90yv0l76-m0nm00-a3676266.html"
-      - "https://geizhals.de/asus-tuf-gaming-radeon-rx-9070-xt-onimusha-special-edition-avx-a3930474.html"
-    shop_urls:
-      - "https://www.alternate.de/ASUS/Radeon-RX-9070-XT-TUF-GAMING-OC-Grafikkarte/html/product/100108564"
-      - "https://www.alternate.de/ASUS/Radeon-RX-9070-XT-TUF-ONIMUSHA-OC-Grafikkarte/html/product/100230049"
-    mpns: ["90YV0L70-M0NA00", "90YV0L76-M0NM00", "90YV0L77-M0NA00", "avx"]  # "avx" = Geizhals' MPN field on the Onimusha page
-    target_price: 969         # leiseste 9070 XT laut TechPowerUp-Messung; Red-Devil-Niveau
-    exclude_keywords: ["prime"]
+  - id: taichi-9070xt
+    name: "ASRock Taichi RX 9070 XT OC"
+    short_name: "Taichi 9070 XT"
+    urls:                     # Standard + White (identical clocks, cooler, TGP, size)
+      - "https://geizhals.de/asrock-radeon-rx-9070-xt-taichi-16gb-oc-a3430089.html"
+      - "https://geizhals.de/asrock-radeon-rx-9070-xt-taichi-white-16gb-oc-90-ga5yzz-00uanz-a3698324.html"
+    mpns: ["90-GA5HZZ-00UANF", "90-GA5YZZ-00UANZ", "RX9070XT TC 16GO"]
+    target_price: 999         # ~9 % unter aktuell 1.099 € (Mindfactory); laut TechPowerUp leiseste/kühlste, Quiet-BIOS
 
   - id: mercury-9070xt
     name: "XFX Mercury RX 9070 XT (Gaming / OC Gaming RGB)"
@@ -103,7 +98,7 @@ products:
     shop_urls:
       - "https://www.alternate.de/XFX/Radeon-RX-9070-XT-OC-Mercury-RGB-Grafikkarte/html/product/100117812"
     mpns: ["RX-97TRGBBB9", "RX-97TRGBBBA", "RX-97TRGBBW9", "RX-97TRGBBWA", "RX-97TMERCB9", "RX-97TMERCBA"]
-    target_price: 949         # ~8 % unter aktuell 1.029 € (nbb); sehr leise laut Tests, aber 36 cm lang
+    target_price: 949         # ~8 % unter aktuell 1.029 € (nbb); 36 cm lang, kein Quiet-BIOS
     exclude_keywords: ["magnetic", "bulk"]
 
   - id: nitro-9070xt
@@ -116,6 +111,6 @@ products:
       - "https://geizhals.de/sapphire-nitro-radeon-rx-9070-xt-phantomlink-11348-08-20g-a3768816.html"
       - "https://geizhals.de/sapphire-nitro-radeon-rx-9070-xt-phantomlink-pe-11348-09-20g-a3768847.html"
     mpns: ["11348-01-20G", "11348-10-20G", "11348-12-20G", "11348-08-20G", "11348-09-20G"]
-    target_price: 889         # ~7 % unter aktuell 960 € (Amazon)
+    target_price: 949         # Amazon-Angebot 960 € ist weg, aktuell 1.044 € (Galaxus); ~9 % darunter
 
 compare: []

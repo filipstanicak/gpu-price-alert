@@ -1,6 +1,6 @@
 # GPU-Preisalarm Black Week 2026
 
-Überwacht 4 Radeon RX 9070 XT (Red Devil, TUF, Mercury, Nitro+) auf Geizhals.de und schickt Push-Nachrichten (ntfy) bei Zielpreis, Preissturz (≥ 8 % unter 7-Tage-Median), neuem Tiefstpreis oder wenn eine Karte wieder lieferbar ist.
+Überwacht 4 Radeon RX 9070 XT (Red Devil, Taichi, Mercury, Nitro+) auf Geizhals.de und schickt Push-Nachrichten (ntfy) bei Zielpreis, Preissturz (≥ 8 % unter 7-Tage-Median), neuem Tiefstpreis oder wenn eine Karte wieder lieferbar ist.
 
 ## Schnellstart (lokal)
 
