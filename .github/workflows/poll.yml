@@ -31,7 +31,11 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      # Latest main, not the commit at trigger time: a run that waited in the concurrency queue
+      # would otherwise start from a stale price DB (double poll + merge conflict on push).
       - uses: actions/checkout@v7
+        with:
+          ref: main
 
       - uses: actions/setup-python@v7
         with:
@@ -54,10 +58,16 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
           git add data/prices.sqlite3
-          if ! git diff --cached --quiet; then
-            git commit -q -m "Preisdaten $(date -u +%Y-%m-%dT%H:%MZ)"
-            git pull -q --rebase && git push -q
-          fi
+          git diff --cached --quiet && exit 0
+          git commit -q -m "Preisdaten $(date -u +%Y-%m-%dT%H:%MZ)"
+          # Retry: GitHub sometimes answers a push with "Internal Server Error". If the binary DB
+          # conflicts anyway, keep this run's version (-X theirs = the commit being rebased).
+          for i in 1 2 3; do
+            if git pull -q --rebase -X theirs && git push -q; then exit 0; fi
+            git rebase --abort 2>/dev/null || true
+            sleep 15
+          done
+          exit 1
 
       # Pages only when prices were actually fetched (main.py writes polled=true);
       # "not due" runs skip it, so half as many deploys.
