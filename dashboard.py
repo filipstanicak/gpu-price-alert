@@ -47,6 +47,7 @@ def build_data(cfg: AppConfig, st: Storage, now: datetime) -> dict:
             "points": points,
         })
     return {"generated": int(now.timestamp() * 1000), "cards": cards,
+            "token_expires": cfg.trigger_token_expires.isoformat() if cfg.trigger_token_expires else None,
             "groups": list(dict.fromkeys(c["group"] for c in cards))}
 
 
@@ -86,6 +87,7 @@ TEMPLATE = r"""<!doctype html>
   --page: #f9f9f7; --surface: #fcfcfb; --ink: #0b0b0b; --ink-2: #52514e; --muted: #898781;
   --grid: #e1e0d9; --axis: #c3c2b7; --border: rgba(11,11,11,0.10);
   --series: #2a78d6; --good: #006300; --good-mark: #0ca30c; --hover: rgba(11,11,11,0.04);
+  --warn-bg: #fff4e0; --warn-border: #e8a13a; --warn-ink: #6b3d00;
 }
 @media (prefers-color-scheme: dark) {
   :root:where(:not([data-theme="light"])) {
@@ -93,6 +95,7 @@ TEMPLATE = r"""<!doctype html>
     --page: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
     --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,0.10);
     --series: #3987e5; --good: #0ca30c; --good-mark: #0ca30c; --hover: rgba(255,255,255,0.05);
+    --warn-bg: #2e2110; --warn-border: #b97a1c; --warn-ink: #f5d9a8;
   }
 }
 :root[data-theme="dark"] {
@@ -100,6 +103,7 @@ TEMPLATE = r"""<!doctype html>
   --page: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
   --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,0.10);
   --series: #3987e5; --good: #0ca30c; --good-mark: #0ca30c; --hover: rgba(255,255,255,0.05);
+  --warn-bg: #2e2110; --warn-border: #b97a1c; --warn-ink: #f5d9a8;
 }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--page); color: var(--ink);
@@ -156,6 +160,9 @@ h2 { font-size: 15px; font-weight: 600; margin: 34px 0 12px; color: var(--ink-2)
 }
 footer { margin-top: 36px; color: var(--muted); font-size: 12px; }
 footer a { color: inherit; }
+.alert { margin: 18px 0 0; padding: 12px 14px; border-radius: 10px; font-size: 14px;
+  background: var(--warn-bg); color: var(--warn-ink); border: 1px solid var(--warn-border); }
+.alert strong { font-weight: 650; }
 </style>
 </head>
 <body>
@@ -164,6 +171,7 @@ footer a { color: inherit; }
     <h1>GPU-Preisalarm</h1>
     <p id="meta"></p>
   </header>
+  <div id="alert" class="alert" role="alert" hidden></div>
 
   <div class="controls" role="group" aria-label="Zeitraum der Diagramme">
     <button type="button" data-range="86400000">24 Stunden</button>
@@ -206,6 +214,22 @@ footer a { color: inherit; }
 
   document.getElementById("meta").textContent =
     "Preisalarm · " + DATA.cards.length + " Produkte · Stand " + fDateTime.format(DATA.generated);
+
+  // ---------- token expiry warning (checked against the viewer's clock, so it also shows
+  // when the page has stopped updating because the token already expired) ----------
+  if (DATA.token_expires) {
+    const exp = new Date(DATA.token_expires + "T23:59:59+01:00");
+    const days = Math.ceil((exp - Date.now()) / 86400000);
+    if (days <= 7) {
+      const box = document.getElementById("alert");
+      const when = new Intl.DateTimeFormat("de-DE", { timeZone: TZ, day: "2-digit", month: "2-digit", year: "numeric" }).format(exp);
+      box.append(el("strong", {}, days < 0 ? "⚠️ GitHub-Token abgelaufen (" + when + ")."
+        : "⚠️ GitHub-Token läuft " + (days === 0 ? "heute" : days === 1 ? "morgen" : "in " + days + " Tagen") + " ab (" + when + ")."));
+      box.append(" " + (days < 0 ? "Der Preisalarm läuft nicht mehr." : "Danach stoppt der Preisalarm.")
+        + " Token auf GitHub neu erzeugen, bei cron-job.org eintragen und das neue Datum in config.yaml (trigger_token_expires) setzen.");
+      box.hidden = false;
+    }
+  }
 
   // ---------- overview table ----------
   const rows = document.getElementById("rows");

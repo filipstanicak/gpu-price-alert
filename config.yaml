@@ -48,6 +48,7 @@ notify:
 
 database: "data/prices.sqlite3"
 dashboard_url: "https://filipstanicak.github.io/gpu-price-alert/"   # overview page (GitHub Pages)
+trigger_token_expires: "2027-02-23"   # GitHub token used by cron-job.org (90 days from 25.11.2026); page warns 7 days ahead
 
 # Mindfactory and Proshop block requests from GitHub's cloud servers (403 / block page).
 # They work from a home internet connection - remove them here if you run the app on your own PC.

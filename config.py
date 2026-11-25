@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import os
 import re
-from datetime import datetime, time
+from datetime import date, datetime, time
 from pathlib import Path
 
 import yaml
@@ -119,6 +119,7 @@ class AppConfig(BaseModel):
     compare: list[CompareRule] = Field(default_factory=list)
     disabled_sources: list[str] = Field(default_factory=list)  # e.g. ["mindfactory", "proshop"]
     dashboard_url: str | None = None  # overview page; the daily report push opens it on tap
+    trigger_token_expires: date | None = None  # expiry of the cron-job.org GitHub token; page warns 7 days ahead
     database: str = "data/prices.sqlite3"
 
     @model_validator(mode="after")

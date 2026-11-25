@@ -46,3 +46,14 @@ def test_build_and_render_dashboard():
     payload = re.search(r'<script type="application/json" id="data">(.*?)</script>', html, re.S).group(1)
     assert "</script>" not in payload  # a label cannot break out of the data block
     assert json.loads(payload.replace("<\\/", "</"))["cards"][0]["label"] == "Red Devil</script><b>x"
+
+
+def test_token_expiry_is_passed_to_page():
+    from datetime import date
+    from config import AppConfig
+    from dashboard import build_data, render
+    from storage import Storage
+    cfg = AppConfig(products=[], trigger_token_expires=date(2027, 2, 23))
+    data = build_data(cfg, Storage(":memory:"), datetime(2026, 11, 25, tzinfo=ZoneInfo("UTC")))
+    assert data["token_expires"] == "2027-02-23"
+    assert 'id="alert"' in render(data)
