@@ -1,4 +1,4 @@
-# GPU-Preisalarm Black Week 2026
+# GPU-Preisalarm
 
 Überwacht 4 Radeon RX 9070 XT (Red Devil, Taichi, Mercury, Nitro+) und 2 Monitore (ASUS XG27AQDMES, ASUS XG27AQDNG) auf Geizhals.de und schickt Push-Nachrichten (ntfy) bei Zielpreis, Preissturz (≥ 8 % unter 7-Tage-Median), neuem Tiefstpreis oder wenn eine Karte wieder lieferbar ist.
 
@@ -22,7 +22,7 @@ Der Workflow `.github/workflows/poll.yml` läuft alle 30 min, vom 26.–30.11. a
 - ntfy-Topic liegt als Repository-Secret `NTFY_TOPIC` (optional `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`).
 - Manuell starten: Actions → GPU-Preisalarm → Run workflow (oder `gh workflow run poll.yml`).
 - Config ändern (z. B. Zielpreise): `config.yaml` bearbeiten, committen, pushen – vorher `git pull`, weil der Bot laufend Preisdaten committet.
-- Nach dem 01.12. macht jeder Lauf nichts mehr; Workflow dann unter Actions deaktivieren.
+- Läuft ohne Enddatum (`poll.run_until: null`). Beenden: Workflow unter Actions deaktivieren und den cron-job.org-Job ausschalten.
 - GitHub startet geplante Läufe oft 5–15 min verspätet.
 
 Alternativ auf einem eigenen Linux-Rechner: `deploy/gpu-price-alert.service` (systemd) oder Docker:

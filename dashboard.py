@@ -79,7 +79,7 @@ TEMPLATE = r"""<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>GPU-Preisalarm</title>
-<meta name="description" content="Bestpreise und Preisverlauf der überwachten Grafikkarten, Black Week 2026">
+<meta name="description" content="Bestpreise und Preisverlauf der überwachten Grafikkarten und Monitore">
 <style>
 :root {
   color-scheme: light;
@@ -205,7 +205,7 @@ footer a { color: inherit; }
     for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v); return e; };
 
   document.getElementById("meta").textContent =
-    "Black Week 2026 · " + DATA.cards.length + " Karten · Stand " + fDateTime.format(DATA.generated);
+    "Preisalarm · " + DATA.cards.length + " Produkte · Stand " + fDateTime.format(DATA.generated);
 
   // ---------- overview table ----------
   const rows = document.getElementById("rows");

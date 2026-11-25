@@ -5,7 +5,7 @@ poll:
     end:   "2026-11-30T23:59:00+01:00"
     interval_minutes: 15
   jitter_seconds: 120
-  run_until: "2026-12-01T23:59:00+01:00"
+  run_until: null          # no end date (was 01.12.2026); stop by disabling the workflow
   delay_between_requests_seconds: 8   # pause between two requests to the same site (x1.0-1.5 random); Geizhals answers 429 if faster
   max_pages: 2
   timezone: "Europe/Berlin"
