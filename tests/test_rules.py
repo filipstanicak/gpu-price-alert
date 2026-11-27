@@ -272,3 +272,11 @@ def test_delivery_any_stated_time_when_no_limit():
     assert delivery_ok(mk(False, 14, "Lieferzeit 7-14 Werktage"), f)
     assert not delivery_ok(mk(False, None, "siehe Shop"), f)
     assert not delivery_ok(mk(False, 14, "x"), FilterConfig(max_delivery_days=5))
+
+
+def test_ignore_delivery_keeps_unavailable_offers():
+    from rules import filter_offers
+    f = FilterConfig(shop_whitelist=["Amazon.de"], ignore_delivery=True, include_shipping=False)
+    o = Offer(shop="Amazon.de", price_eur=459, shipping_eur=None, in_stock=False,
+              delivery_text="siehe Shop", delivery_days_max=None, offer_url="u")
+    assert filter_offers([o], P, f) and not filter_offers([o], P, FilterConfig(shop_whitelist=["Amazon.de"], include_shipping=False))

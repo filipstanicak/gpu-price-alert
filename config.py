@@ -33,6 +33,7 @@ class PollConfig(BaseModel):
 
 class FilterConfig(BaseModel):
     max_delivery_days: int | None = 5  # None = any stated delivery time is fine
+    ignore_delivery: bool = False  # True = cheapest offer regardless of stock/delivery status
     include_shipping: bool = True
     shop_whitelist: list[str] = Field(default_factory=list)
     exclude_merchant_keywords: list[str] = Field(

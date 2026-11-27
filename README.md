@@ -1,6 +1,6 @@
 # GPU-Preisalarm
 
-Überwacht 4 Radeon RX 9070 XT (Red Devil, Taichi, Mercury, Nitro+) und 2 Monitore (Gigabyte MO27Q28GR, ASUS XG27AQWMG) auf Geizhals.de und schickt Push-Nachrichten (ntfy) bei Zielpreis, Preissturz (≥ 8 % unter 7-Tage-Median), neuem Tiefstpreis oder wenn eine Karte wieder lieferbar ist.
+Überwacht 4 Radeon RX 9070 XT (Red Devil, Taichi, Mercury, Nitro+) auf Geizhals.de und schickt Push-Nachrichten (ntfy) bei Zielpreis, Preissturz (≥ 8 % unter 7-Tage-Median), neuem Tiefstpreis oder wenn eine Karte wieder lieferbar ist.
 
 ## Schnellstart (lokal)
 
@@ -38,7 +38,7 @@ Der Tagesreport-Push öffnet die Seite beim Antippen.
 - **Varianten-Schutz:** Jede Seite muss die MPN aus `mpns` exakt tragen (z. B. `RX9070XT 16G-E/OC/WHITE` wird abgelehnt) und der Seitentitel darf kein `exclude_keywords`-Wort enthalten. Sonst → einmalige Warn-Push.
 - **Direkte Shop-Abfrage:** Mindfactory, Alternate und Proshop werden zusätzlich direkt abgefragt (`shop_urls`, schema.org-Produktdaten). Deren Preis ersetzt Geizhals' (oft 30–60 min alte) Kopie desselben Shops. idealo, Notebooksbilliger, Cyberport, Computeruniverse, Galaxus und Amazon blockieren automatische Abrufe und werden nur über Geizhals erfasst.
 - **Verglichen wird nur der Kartenpreis** (`include_shipping: false`), Versandkosten werden ignoriert. Mit `true` wird stattdessen Artikel + Standardversand verglichen.
-- **Lieferbar** = „auf Lager“/„lagernd“ o. ä. oder irgendeine angegebene Lieferzeit (`max_delivery_days: null`). Ohne Lieferzeit und ohne Lagerangabe (z. B. „siehe Shop“) wird ein Angebot ignoriert.
+- **Lieferstatus wird ignoriert** (`ignore_delivery: true`): Es zählt immer das billigste Angebot der erlaubten Shops, auch „siehe Shop“ oder „nicht lagernd“. Der Status steht in der Push. Mit `false` gilt: „auf Lager“ o. ä. oder irgendeine angegebene Lieferzeit (`max_delivery_days`).
 - `target_price: 0` = Zielpreis-Regel aus. Nach 2–3 Tagen Verlauf (`python report.py`) setzen.
 - Akzeptanztest Zielpreis: `target_price` testweise hoch setzen und mit separater DB laufen lassen, damit der Test-Alarm echte Alarme nicht blockiert:
   `python main.py --once --db data/test.sqlite3`

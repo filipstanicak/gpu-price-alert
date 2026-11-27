@@ -49,7 +49,7 @@ def filter_offers(offers: list[Offer], product: ProductConfig, f: FilterConfig) 
             o = replace(o, shipping_eur=None)  # compare the card price only; shipping is ignored
         if not shop_allowed(o.shop, f):
             continue
-        if not delivery_ok(o, f):
+        if not f.ignore_delivery and not delivery_ok(o, f):
             continue
         if excluded_by_keywords(o.title, product.exclude_keywords):
             continue

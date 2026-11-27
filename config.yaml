@@ -11,7 +11,8 @@ poll:
   timezone: "Europe/Berlin"
 
 filters:
-  max_delivery_days: null    # any stated delivery time counts (user wish); no time and not in stock = skipped
+  max_delivery_days: null    # any stated delivery time counts
+  ignore_delivery: true      # user wish: always the cheapest offer, whatever the stock status (push shows it)
   include_shipping: false     # compare the card price only (shipping ignored)
   shop_whitelist:            # matched case-insensitively, ".de/.net/.com" ignored
     - Mindfactory
@@ -113,25 +114,5 @@ products:
       - "https://geizhals.de/sapphire-nitro-radeon-rx-9070-xt-phantomlink-pe-11348-09-20g-a3768847.html"
     mpns: ["11348-01-20G", "11348-10-20G", "11348-12-20G", "11348-08-20G", "11348-09-20G"]
     target_price: 949         # Amazon-Angebot 960 € ist weg, aktuell 1.044 € (Galaxus); ~9 % darunter
-
-  # ---------------- Monitore (exactly these models, no siblings) ----------------
-  - id: mo27q28gr
-    name: "Gigabyte MO27Q28GR"
-    short_name: "Gigabyte MO27Q28GR"
-    group: "Monitore"
-    urls:                     # NOT MO27Q28G (without R, different model). Geizhals lists no MPN here,
-      - "https://geizhals.de/gigabyte-mo27q28gr-a3779801.html"   # so the title must contain the exact name
-    require_keywords: ["MO27Q28GR"]
-    target_price: 469         # ~7 % unter aktuell 507 € (Mindfactory); Geizhals zeigte schon ab 459 €
-
-  - id: xg27aqwmg
-    name: "ASUS ROG Strix OLED XG27AQWMG"
-    short_name: "ASUS XG27AQWMG"
-    group: "Monitore"
-    urls:                     # NOT XG27AQWMGZ / XG27AQDMG (different models)
-      - "https://geizhals.de/asus-rog-strix-oled-xg27aqwmg-90lm0bz0-b01171-a3649150.html"
-    mpns: ["90LM0BZ0-B01171", "XG27AQWMG"]
-    target_price: 449         # ~8 % unter aktuell 486 € (Cyberport)
-    exclude_keywords: ["xg27aqwmgz"]
 
 compare: []
