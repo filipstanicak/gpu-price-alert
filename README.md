@@ -1,6 +1,6 @@
 # GPU-Preisalarm
 
-Überwacht 4 Radeon RX 9070 XT (Red Devil, Taichi, Mercury, Nitro+) und 2 Monitore (ASUS XG27AQDMES, ASUS XG27AQDNG) auf Geizhals.de und schickt Push-Nachrichten (ntfy) bei Zielpreis, Preissturz (≥ 8 % unter 7-Tage-Median), neuem Tiefstpreis oder wenn eine Karte wieder lieferbar ist.
+Überwacht 4 Radeon RX 9070 XT (Red Devil, Taichi, Mercury, Nitro+) und 2 Monitore (Gigabyte MO27Q28GR, ASUS XG27AQWMG) auf Geizhals.de und schickt Push-Nachrichten (ntfy) bei Zielpreis, Preissturz (≥ 8 % unter 7-Tage-Median), neuem Tiefstpreis oder wenn eine Karte wieder lieferbar ist.
 
 ## Schnellstart (lokal)
 

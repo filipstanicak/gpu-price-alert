@@ -113,24 +113,23 @@ products:
     target_price: 949         # Amazon-Angebot 960 € ist weg, aktuell 1.044 € (Galaxus); ~9 % darunter
 
   # ---------------- Monitore (exactly these models, no siblings) ----------------
-  - id: xg27aqdmes
-    name: "ASUS ROG Strix OLED XG27AQDMES"
-    short_name: "ASUS XG27AQDMES"
+  - id: mo27q28gr
+    name: "Gigabyte MO27Q28GR"
+    short_name: "Gigabyte MO27Q28GR"
     group: "Monitore"
-    urls:                     # NOT XG27AQDMESZ / XG27AQDMG (different models)
-      - "https://geizhals.de/asus-rog-strix-oled-xg27aqdmes-90lm0c80-b01171-a3684572.html"
-    mpns: ["90LM0C80-B01171", "XG27AQDMES"]
-    target_price: 379         # ~7 % unter aktuell 410 € (nbb)
-    exclude_keywords: ["xg27aqdmesz", "xg27aqdmg"]
+    urls:                     # NOT MO27Q28G (without R, different model). Geizhals lists no MPN here,
+      - "https://geizhals.de/gigabyte-mo27q28gr-a3779801.html"   # so the title must contain the exact name
+    require_keywords: ["MO27Q28GR"]
+    target_price: 469         # ~7 % unter aktuell 507 € (Mindfactory); Geizhals zeigte schon ab 459 €
 
-  - id: xg27aqdng
-    name: "ASUS ROG Strix OLED XG27AQDNG"
-    short_name: "ASUS XG27AQDNG"
+  - id: xg27aqwmg
+    name: "ASUS ROG Strix OLED XG27AQWMG"
+    short_name: "ASUS XG27AQWMG"
     group: "Monitore"
-    urls:                     # NOT XG27ACDNG / XG27AQDMG (different models)
-      - "https://geizhals.de/asus-rog-strix-oled-xg27aqdng-90lm0ch0-b01971-a3689594.html"
-    mpns: ["90LM0CH0-B01971", "XG27AQDNG"]
-    target_price: 519         # ~9 % unter aktuell 567 € (Proshop); war schon ab ~525 € gelistet
-    exclude_keywords: ["xg27acdng", "xg27aqdmg"]
+    urls:                     # NOT XG27AQWMGZ / XG27AQDMG (different models)
+      - "https://geizhals.de/asus-rog-strix-oled-xg27aqwmg-90lm0bz0-b01171-a3649150.html"
+    mpns: ["90LM0BZ0-B01171", "XG27AQWMG"]
+    target_price: 449         # ~8 % unter aktuell 486 € (Cyberport)
+    exclude_keywords: ["xg27aqwmgz"]
 
 compare: []

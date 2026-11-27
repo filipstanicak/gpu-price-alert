@@ -1,3 +1,4 @@
+import pytest
 from datetime import datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
@@ -252,3 +253,11 @@ def test_e2e_geizhals_down_skips_card_instead_of_partial_price():
     app.run_cycle(t + timedelta(minutes=30))
     assert [p["total_eur"] for p in app.st.history("rd")] == [999]
     assert app.st.get_state("avail:rd") == "1"
+
+
+def test_require_keywords_rejects_sibling_model():
+    from sources.base import check_variant
+    p = P.model_copy(update={"require_keywords": ["MO27Q28GR"], "mpns": [], "exclude_keywords": []})
+    check_variant(p, 'GIGABYTE MO27Q28GR, 27"', "")
+    with pytest.raises(ParserError):
+        check_variant(p, 'GIGABYTE MO27Q28G, 27"', "")

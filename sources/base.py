@@ -80,6 +80,9 @@ def check_variant(product: ProductConfig, title: str, mpn: str) -> None:
     bad = next((k for k in product.exclude_keywords if k.lower() in title.lower()), None)
     if bad:
         raise ParserError(f"page title '{title}' contains excluded keyword '{bad}' – wrong URL?")
+    missing = next((k for k in product.require_keywords if k.lower() not in title.lower()), None)
+    if missing:
+        raise ParserError(f"page title '{title}' lacks required keyword '{missing}' – wrong URL?")
     # exact match: "RX9070XT 16G-E/OC/WHITE" must NOT pass for "RX9070XT 16G-E/OC"
     if product.mpns and mpn and norm_mpn(mpn) not in {norm_mpn(m) for m in product.mpns}:
         raise ParserError(f"MPN mismatch: page has '{mpn}', expected one of {product.mpns}")

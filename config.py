@@ -82,6 +82,7 @@ class ProductConfig(BaseModel):
     target_price: float = 0  # 0 = rule disabled
     drop_percent: float | None = None  # overrides rules_default.drop_percent
     exclude_keywords: list[str] = Field(default_factory=list)
+    require_keywords: list[str] = Field(default_factory=list)  # page title must contain each (for pages without an MPN)
 
     @model_validator(mode="after")
     def _merge_urls(self) -> "ProductConfig":
