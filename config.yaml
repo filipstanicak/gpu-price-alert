@@ -11,7 +11,7 @@ poll:
   timezone: "Europe/Berlin"
 
 filters:
-  max_delivery_days: 5
+  max_delivery_days: null    # any stated delivery time counts (user wish); no time and not in stock = skipped
   include_shipping: false     # compare the card price only (shipping ignored)
   shop_whitelist:            # matched case-insensitively, ".de/.net/.com" ignored
     - Mindfactory
@@ -23,6 +23,8 @@ filters:
     - Galaxus
     - Cyberport
     - Amazon.de              # only Amazon itself; marketplace sellers are excluded below
+    - Coolblue
+    - electronic4you
   exclude_merchant_keywords: ["marketplace", "ebay", "stores", "filiale"]
 
 rules_default:

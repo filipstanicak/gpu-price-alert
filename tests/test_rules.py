@@ -2,7 +2,7 @@ import pytest
 from datetime import datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
-from config import AppConfig, NotifyConfig, ProductConfig, RulesConfig
+from config import AppConfig, FilterConfig, NotifyConfig, ProductConfig, RulesConfig
 from main import App
 from models import Alert, Offer, Stats
 from notify import Dispatcher, format_alert
@@ -261,3 +261,14 @@ def test_require_keywords_rejects_sibling_model():
     check_variant(p, 'GIGABYTE MO27Q28GR, 27"', "")
     with pytest.raises(ParserError):
         check_variant(p, 'GIGABYTE MO27Q28G, 27"', "")
+
+
+def test_delivery_any_stated_time_when_no_limit():
+    from rules import delivery_ok
+    f = FilterConfig(max_delivery_days=None)
+    mk = lambda stock, days, txt: Offer(shop="x", price_eur=1, shipping_eur=None, in_stock=stock,
+                                       delivery_text=txt, delivery_days_max=days, offer_url="u")
+    assert delivery_ok(mk(True, None, "lagernd"), f)
+    assert delivery_ok(mk(False, 14, "Lieferzeit 7-14 Werktage"), f)
+    assert not delivery_ok(mk(False, None, "siehe Shop"), f)
+    assert not delivery_ok(mk(False, 14, "x"), FilterConfig(max_delivery_days=5))

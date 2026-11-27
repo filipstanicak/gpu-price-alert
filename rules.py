@@ -29,7 +29,9 @@ def shop_allowed(shop: str, f: FilterConfig) -> bool:
 def delivery_ok(offer: Offer, f: FilterConfig) -> bool:
     if offer.in_stock:
         return True
-    return offer.delivery_days_max is not None and offer.delivery_days_max <= f.max_delivery_days
+    if offer.delivery_days_max is None:  # no delivery time stated ("siehe Shop", "nicht lagernd")
+        return False
+    return f.max_delivery_days is None or offer.delivery_days_max <= f.max_delivery_days
 
 
 def excluded_by_keywords(text: str, keywords: list[str]) -> str | None:

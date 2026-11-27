@@ -38,7 +38,7 @@ Der Tagesreport-Push öffnet die Seite beim Antippen.
 - **Varianten-Schutz:** Jede Seite muss die MPN aus `mpns` exakt tragen (z. B. `RX9070XT 16G-E/OC/WHITE` wird abgelehnt) und der Seitentitel darf kein `exclude_keywords`-Wort enthalten. Sonst → einmalige Warn-Push.
 - **Direkte Shop-Abfrage:** Mindfactory, Alternate und Proshop werden zusätzlich direkt abgefragt (`shop_urls`, schema.org-Produktdaten). Deren Preis ersetzt Geizhals' (oft 30–60 min alte) Kopie desselben Shops. idealo, Notebooksbilliger, Cyberport, Computeruniverse, Galaxus und Amazon blockieren automatische Abrufe und werden nur über Geizhals erfasst.
 - **Verglichen wird nur der Kartenpreis** (`include_shipping: false`), Versandkosten werden ignoriert. Mit `true` wird stattdessen Artikel + Standardversand verglichen.
-- **Lieferbar** = Geizhals-Status „lagernd“ oder Lieferzeit ≤ `max_delivery_days`.
+- **Lieferbar** = „auf Lager“/„lagernd“ o. ä. oder irgendeine angegebene Lieferzeit (`max_delivery_days: null`). Ohne Lieferzeit und ohne Lagerangabe (z. B. „siehe Shop“) wird ein Angebot ignoriert.
 - `target_price: 0` = Zielpreis-Regel aus. Nach 2–3 Tagen Verlauf (`python report.py`) setzen.
 - Akzeptanztest Zielpreis: `target_price` testweise hoch setzen und mit separater DB laufen lassen, damit der Test-Alarm echte Alarme nicht blockiert:
   `python main.py --once --db data/test.sqlite3`
